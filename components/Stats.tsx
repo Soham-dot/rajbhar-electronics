@@ -1,11 +1,15 @@
 import { Award, Tv, Star, Clock } from "lucide-react";
+import { BUSINESS } from "@/lib/constants";
+
+const currentYear = new Date().getFullYear();
+const yearsExperience = currentYear - parseInt(BUSINESS.since);
 
 const stats = [
   {
     icon: Award,
-    value: "27+",
+    value: `${yearsExperience}+`,
     label: "Years Experience",
-    description: "Serving Mumbai since 1996",
+    description: `Serving Mumbai since ${BUSINESS.since}`,
   },
   {
     icon: Tv,
