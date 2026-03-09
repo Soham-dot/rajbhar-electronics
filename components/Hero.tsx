@@ -1,6 +1,7 @@
 "use client";
 import { MessageCircle, Phone, ChevronDown } from "lucide-react";
 import { useState } from "react";
+import { BUSINESS } from "@/lib/constants";
 
 const services = [
   "LED/LCD TV Repair",
@@ -97,14 +98,14 @@ export default function Hero() {
         {/* CTA buttons */}
         <div className="flex flex-wrap items-center justify-center gap-4">
           <a
-            href="tel:+919876543210"
+            href={`tel:${BUSINESS.phoneRaw}`}
             className="flex items-center gap-2 border border-white/20 hover:border-white/40 text-white px-6 py-3 rounded-xl font-medium transition-all hover:bg-white/5"
           >
             <Phone className="w-5 h-5" />
             Call Now
           </a>
           <a
-            href="https://wa.me/919876543210?text=Hi%2C%20I%20need%20TV%20repair%20service"
+            href={BUSINESS.whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 text-white px-6 py-3 rounded-xl font-medium transition-all bg-whatsapp"

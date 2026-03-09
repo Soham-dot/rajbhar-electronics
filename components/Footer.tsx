@@ -1,4 +1,5 @@
 import { Tv, Facebook, Twitter, Instagram, Youtube, MapPin, Phone, Mail } from "lucide-react";
+import { BUSINESS } from "@/lib/constants";
 
 const quickLinks = [
   { label: "Home", href: "#" },
@@ -28,10 +29,10 @@ export default function Footer() {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <Tv className="w-6 h-6 text-blue-400" />
-              <span className="font-bold text-white text-lg">Rajbhar Electronics</span>
+              <span className="font-bold text-white text-lg">{BUSINESS.name}</span>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed mb-5">
-              Mumbai&apos;s most trusted TV repair service since 1996. Expert technicians, transparent pricing, and 100% satisfaction guarantee.
+              Mumbai&apos;s most trusted TV repair service since {BUSINESS.since}. Expert technicians, transparent pricing, and 100% satisfaction guarantee.
             </p>
             {/* Social icons */}
             <div className="flex gap-3">
@@ -94,20 +95,19 @@ export default function Footer() {
               <div className="flex items-start gap-2.5">
                 <MapPin className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
                 <p className="text-gray-400 text-sm">
-                  Shop No. 12, Rajbhar Complex,<br />
-                  Chunabhatti, Mumbai – 400022
+                  {BUSINESS.address}
                 </p>
               </div>
               <div className="flex items-center gap-2.5">
                 <Phone className="w-4 h-4 text-blue-400 flex-shrink-0" />
-                <a href="tel:+919876543210" className="text-gray-400 hover:text-white text-sm transition-colors">
-                  +91 98765 43210
+                <a href={`tel:${BUSINESS.phoneRaw}`} className="text-gray-400 hover:text-white text-sm transition-colors">
+                  {BUSINESS.phone}
                 </a>
               </div>
               <div className="flex items-center gap-2.5">
                 <Mail className="w-4 h-4 text-blue-400 flex-shrink-0" />
-                <a href="mailto:info@rajbharelectronics.in" className="text-gray-400 hover:text-white text-sm transition-colors">
-                  info@rajbharelectronics.in
+                <a href={`mailto:${BUSINESS.email}`} className="text-gray-400 hover:text-white text-sm transition-colors">
+                  {BUSINESS.email}
                 </a>
               </div>
             </div>
@@ -118,9 +118,9 @@ export default function Footer() {
       {/* Bottom bar */}
       <div className="border-t border-white/5 py-6">
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-3 text-sm text-gray-500">
-          <p>© {currentYear} Rajbhar Electronics. All rights reserved.</p>
+          <p>© {currentYear} {BUSINESS.name}. All rights reserved.</p>
           <p>
-            Made with ❤️ in Mumbai · Serving Chunabhatti since 1996
+            Made with ❤️ in Mumbai · Serving Chunabhatti since {BUSINESS.since}
           </p>
         </div>
       </div>

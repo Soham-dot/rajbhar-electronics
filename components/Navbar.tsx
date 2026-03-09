@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Tv, Phone, Menu, X } from "lucide-react";
+import { BUSINESS } from "@/lib/constants";
 
 const navLinks = [
   { label: "Services", href: "#services" },
@@ -19,8 +20,8 @@ export default function Navbar() {
         <div className="flex items-center gap-2">
           <Tv className="w-7 h-7 text-blue-400" />
           <div>
-            <p className="font-bold text-white text-lg leading-none">Rajbhar Electronics</p>
-            <p className="text-xs text-gray-400">Since 1996 · Chunabhatti</p>
+            <p className="font-bold text-white text-lg leading-none">{BUSINESS.name}</p>
+            <p className="text-xs text-gray-400">Since {BUSINESS.since} · Chunabhatti</p>
           </div>
         </div>
 
@@ -40,11 +41,11 @@ export default function Navbar() {
         {/* Right side */}
         <div className="hidden md:flex items-center gap-4">
           <a
-            href="tel:+919876543210"
+            href={`tel:${BUSINESS.phoneRaw}`}
             className="flex items-center gap-2 text-gray-300 hover:text-white text-sm"
           >
             <Phone className="w-4 h-4" />
-            +91 98765 43210
+            {BUSINESS.phone}
           </a>
           <a
             href="#contact"
@@ -78,11 +79,11 @@ export default function Navbar() {
             </a>
           ))}
           <a
-            href="tel:+919876543210"
+            href={`tel:${BUSINESS.phoneRaw}`}
             className="flex items-center gap-2 text-gray-300 text-sm"
           >
             <Phone className="w-4 h-4" />
-            +91 98765 43210
+            {BUSINESS.phone}
           </a>
           <a
             href="#contact"

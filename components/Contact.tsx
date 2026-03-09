@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { MapPin, Phone, Mail, Clock, MessageCircle } from "lucide-react";
+import { BUSINESS } from "@/lib/constants";
 
 const tvBrands = [
   "Samsung", "LG", "Sony", "Panasonic", "Mi (Xiaomi)", "OnePlus", "TCL",
@@ -118,8 +119,7 @@ export default function Contact() {
                   <div>
                     <p className="text-sm font-semibold text-white">Address</p>
                     <p className="text-sm text-gray-400">
-                      Shop No. 12, Rajbhar Complex,<br />
-                      Chunabhatti, Mumbai – 400022
+                      {BUSINESS.address}
                     </p>
                   </div>
                 </div>
@@ -129,8 +129,8 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-white">Phone</p>
-                    <a href="tel:+919876543210" className="text-sm text-blue-400 hover:text-blue-300">
-                      +91 98765 43210
+                    <a href={`tel:${BUSINESS.phoneRaw}`} className="text-sm text-blue-400 hover:text-blue-300">
+                      {BUSINESS.phone}
                     </a>
                   </div>
                 </div>
@@ -140,8 +140,8 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-white">Email</p>
-                    <a href="mailto:info@rajbharelectronics.in" className="text-sm text-blue-400 hover:text-blue-300">
-                      info@rajbharelectronics.in
+                    <a href={`mailto:${BUSINESS.email}`} className="text-sm text-blue-400 hover:text-blue-300">
+                      {BUSINESS.email}
                     </a>
                   </div>
                 </div>
@@ -151,7 +151,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-white">Business Hours</p>
-                    <p className="text-sm text-gray-400">Monday – Sunday: 9:00 AM – 8:00 PM</p>
+                    <p className="text-sm text-gray-400">{BUSINESS.hours}</p>
                     <p className="text-xs text-green-400 mt-0.5">● Open Now</p>
                   </div>
                 </div>
@@ -166,10 +166,10 @@ export default function Contact() {
                 </div>
                 <div className="text-center">
                   <p className="text-white font-semibold text-sm">Find Us on Google Maps</p>
-                  <p className="text-gray-500 text-xs mt-0.5">Chunabhatti, Mumbai – 400022</p>
+                  <p className="text-gray-500 text-xs mt-0.5">{BUSINESS.address}</p>
                 </div>
                 <a
-                  href="https://maps.google.com/?q=Chunabhatti,Mumbai"
+                  href={BUSINESS.mapsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-1 text-xs bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg transition-colors"
@@ -181,7 +181,7 @@ export default function Contact() {
 
             {/* WhatsApp CTA */}
             <a
-              href="https://wa.me/919876543210?text=Hi%2C%20I%20need%20TV%20repair%20service"
+              href={BUSINESS.whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-3 rounded-2xl py-4 font-semibold text-white transition-all hover:opacity-90 bg-whatsapp"
