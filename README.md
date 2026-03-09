@@ -4,7 +4,7 @@ A production-level website for Rajbhar Electronics — Mumbai's most trusted TV 
 
 ## Tech Stack
 
-- **Next.js 14** (App Router)
+- **Next.js 15** (App Router)
 - **TypeScript**
 - **Tailwind CSS**
 - **Lucide React** (icons)
