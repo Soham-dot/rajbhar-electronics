@@ -55,14 +55,22 @@ export default function Navbar() {
           </a>
         </div>
 
-        {/* Mobile menu toggle */}
-        <button
-          className="md:hidden text-white"
-          onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label="Toggle menu"
-        >
-          {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
+        {/* Mobile: Book Repair button + menu toggle */}
+        <div className="md:hidden flex items-center gap-2">
+          <a
+            href="#contact"
+            className="bg-blue-600 hover:bg-blue-500 text-white text-sm px-3 py-1.5 rounded-lg font-medium transition-colors"
+          >
+            Book Repair
+          </a>
+          <button
+            className="text-white"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Toggle menu"
+          >
+            {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile menu */}
