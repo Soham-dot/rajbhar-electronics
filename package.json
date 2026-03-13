@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "sync": "git add . && git commit -m"
   },
   "dependencies": {
     "autoprefixer": "^10.4.27",
