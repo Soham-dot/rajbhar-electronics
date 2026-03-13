@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { storeBookingLead } from "@/lib/server/db";
 import { sendBookingLeadEmail } from "@/lib/server/email";
 import {
   buildBookingWhatsappUrl,
@@ -138,6 +139,23 @@ export async function POST(request: Request) {
 
   const webhookResult = await sendLeadToWebhook(lead);
 
+  const databaseResult = await storeBookingLead({
+    source: lead.source,
+    bookingId,
+    createdAt,
+    userAgent: lead.userAgent,
+    name,
+    phone,
+    address,
+    date,
+    time,
+    cart,
+    appliedCoupon,
+    discount,
+    total,
+    finalTotal,
+  });
+
   const emailResult = await sendBookingLeadEmail({
     bookingId,
     createdAt,
@@ -153,8 +171,8 @@ export async function POST(request: Request) {
     finalTotal,
   });
 
-  const hasDelivered = webhookResult.delivered || emailResult.delivered;
-  const allSkipped = webhookResult.skipped && emailResult.skipped;
+  const hasDelivered = webhookResult.delivered || emailResult.delivered || databaseResult.stored;
+  const allSkipped = webhookResult.skipped && emailResult.skipped && databaseResult.skipped;
 
   if (!hasDelivered && !allSkipped) {
     return NextResponse.json(
@@ -173,6 +191,10 @@ export async function POST(request: Request) {
 
   if (emailResult.error) {
     console.warn("[lead:booking] Email delivery issue:", emailResult.error);
+  }
+
+  if (databaseResult.error) {
+    console.warn("[lead:booking] Database storage issue:", databaseResult.error);
   }
 
   return NextResponse.json(

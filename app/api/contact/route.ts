@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { storeContactLead } from "@/lib/server/db";
 import { sendContactLeadEmail } from "@/lib/server/email";
 import {
   buildContactWhatsappUrl,
@@ -60,6 +61,16 @@ export async function POST(request: Request) {
 
   const webhookResult = await sendLeadToWebhook(lead);
 
+  const databaseResult = await storeContactLead({
+    source: lead.source,
+    createdAt,
+    userAgent: lead.userAgent,
+    name,
+    phone,
+    tvBrand,
+    issue,
+  });
+
   const emailResult = await sendContactLeadEmail({
     name,
     phone,
@@ -68,8 +79,8 @@ export async function POST(request: Request) {
     createdAt,
   });
 
-  const hasDelivered = webhookResult.delivered || emailResult.delivered;
-  const allSkipped = webhookResult.skipped && emailResult.skipped;
+  const hasDelivered = webhookResult.delivered || emailResult.delivered || databaseResult.stored;
+  const allSkipped = webhookResult.skipped && emailResult.skipped && databaseResult.skipped;
 
   if (!hasDelivered && !allSkipped) {
     return NextResponse.json(
@@ -88,6 +99,10 @@ export async function POST(request: Request) {
 
   if (emailResult.error) {
     console.warn("[lead:contact] Email delivery issue:", emailResult.error);
+  }
+
+  if (databaseResult.error) {
+    console.warn("[lead:contact] Database storage issue:", databaseResult.error);
   }
 
   return NextResponse.json(
