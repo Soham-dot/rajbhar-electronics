@@ -1,0 +1,10 @@
+# Allow all bots to crawl
+User-agent: *
+Allow: /
+Disallow: /admin/
+
+# Specify sitemap
+Sitemap: https://rajbharelectronics.in/sitemap.xml
+
+# Crawl delay (in seconds)
+Crawl-delay: 1

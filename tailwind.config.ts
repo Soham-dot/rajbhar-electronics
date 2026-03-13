@@ -10,13 +10,21 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "#061a27",
-        card: "#0b1d2e",
+        // base light mode colors
+        background: "#ffffff",
+        card: "#f9fafb",
         "blue-accent": "#20c997",
         "green-accent": "#2dd4bf",
         "whatsapp": "#25D366",
-        "muted": "#9aa5b1",
-        "border": "rgba(255,255,255,0.08)",
+        "muted": "#6b7280",
+        "muted-light": "#d1d5db",
+        "border": "rgba(0,0,0,0.08)",
+      },
+      backgroundColor: {
+        card: {
+          DEFAULT: "#f9fafb",
+          dark: "#1a3a47",
+        },
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",

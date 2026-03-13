@@ -46,5 +46,8 @@ rajbhar-electronics/
 │   ├── HowItWorks.tsx       # Process steps
 │   ├── Reviews.tsx          # Testimonials
 │   ├── Contact.tsx          # Contact form + info
-│   └── Footer.tsx           # Footer
+│   └cd "C:\Users\Admin\OneDrive\Desktop\GITHUB WEBSITE PROJECT\rajbhar-electronics-main\rajbhar-electronics-main"
+git initgit remote add origin https://github.com/Soham-dot/rajbhar-electronics.git
+git branch -M main
+git push -u origin main── Footer.tsx           # Footer
 ```

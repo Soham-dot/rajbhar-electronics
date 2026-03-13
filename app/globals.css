@@ -4,6 +4,19 @@
 
 :root {
   scroll-behavior: smooth;
+  background-color: #ffffff;
+  color: #000000;
+}
+
+html.dark {
+  background-color: #0a0a0a;
+  color: #ffffff;
+}
+
+/* Only force text color on main content areas, not on card contents */
+html.dark body > div,
+html.dark main {
+  color: #ffffff;
 }
 
 *,
@@ -14,6 +27,66 @@
 
 body {
   font-family: var(--font-geist), ui-sans-serif, system-ui, -apple-system, sans-serif;
-  background-color: #061a27;
-  color: #ffffff;
+}
+
+@keyframes loading-bar {
+  0% { width: 0%; }
+  70% { width: 85%; }
+  100% { width: 100%; }
+}
+
+.animate-loading-bar {
+  animation: loading-bar 0.5s ease-out forwards;
+}
+
+/* Dynamic gradient background animation */
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  25% {
+    background-position: 50% 100%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  75% {
+    background-position: 50% 0%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Page gradient - light mode */
+.page-gradient {
+  background: linear-gradient(-45deg, #e2e8f0, #dbeafe, #d1fae5, #e2e8f0, #ede9fe, #d1fae5);
+  background-size: 400% 400%;
+  animation: gradient-shift 12s ease infinite;
+}
+
+html.dark .page-gradient {
+  background: linear-gradient(-45deg, #0a0a1a, #0c1220, #071a30, #0a0a1a, #150d28, #0b1018);
+  background-size: 400% 400%;
+  animation: gradient-shift 12s ease infinite;
+}
+
+/* Nav gradient - light mode */
+.nav-gradient {
+  background: linear-gradient(-45deg, #e5e7eb, #dbeafe, #d5f5e3, #e5e7eb, #ede9fe, #dbeafe);
+  background-size: 400% 400%;
+  animation: gradient-shift 12s ease infinite;
+}
+
+html.dark .nav-gradient {
+  background: linear-gradient(-45deg, #080810, #0a0f1a, #0d0d20, #080810, #120a1e, #080d14);
+  background-size: 400% 400%;
+  animation: gradient-shift 12s ease infinite;
+}
+
+/* Footer gradient - always dark */
+.animated-gradient-footer {
+  background: linear-gradient(-45deg, #0f1729, #0f2240, #1a0f30, #0f1729, #1c1660, #0f2240);
+  background-size: 400% 400%;
+  animation: gradient-shift 12s ease infinite;
 }
