@@ -21,14 +21,44 @@ export default function BookingForm({ cart, onBack, appliedCoupon, discount }: B
     date: "",
     time: "",
   });
-  const [addressError, setAddressError] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const finalTotal = Math.max(0, total - discount);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setStep("confirmed");
+    setSubmitError("");
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...form,
+          cart,
+          appliedCoupon,
+          discount,
+        }),
+      });
+
+      const data = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        throw new Error(data.error || "Unable to submit booking right now.");
+      }
+
+      setStep("confirmed");
+    } catch (error) {
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (step === "confirmed") {
@@ -118,6 +148,12 @@ export default function BookingForm({ cart, onBack, appliedCoupon, discount }: B
           <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Complete Your Booking</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Enter your details and we&apos;ll schedule the service</p>
 
+          {submitError && (
+            <div className="mb-4 bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-red-400 text-sm">
+              {submitError}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Full Name *</label>
@@ -185,10 +221,11 @@ export default function BookingForm({ cart, onBack, appliedCoupon, discount }: B
             </div>
             <button
               type="submit"
-              className="w-full flex items-center justify-center gap-2 bg-blue-accent hover:bg-blue-accent/90 text-white font-bold py-3.5 rounded-xl transition-all duration-200 hover:scale-105 text-sm mt-2"
+              disabled={isSubmitting}
+              className="w-full flex items-center justify-center gap-2 bg-blue-accent hover:bg-blue-accent/90 text-white font-bold py-3.5 rounded-xl transition-all duration-200 hover:scale-105 text-sm mt-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               <Send className="w-4 h-4" />
-              Confirm Booking · ₹{finalTotal}
+              {isSubmitting ? "Submitting Booking..." : `Confirm Booking · ₹${finalTotal}`}
             </button>
           </form>
         </div>
