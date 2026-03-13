@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { sendContactLeadEmail } from "@/lib/server/email";
 import {
   buildContactWhatsappUrl,
   isValidPhone,
@@ -58,15 +59,35 @@ export async function POST(request: Request) {
   };
 
   const webhookResult = await sendLeadToWebhook(lead);
-  if (!webhookResult.delivered && !webhookResult.skipped) {
+
+  const emailResult = await sendContactLeadEmail({
+    name,
+    phone,
+    tvBrand,
+    issue,
+    createdAt,
+  });
+
+  const hasDelivered = webhookResult.delivered || emailResult.delivered;
+  const allSkipped = webhookResult.skipped && emailResult.skipped;
+
+  if (!hasDelivered && !allSkipped) {
     return NextResponse.json(
       { ok: false, error: "Unable to submit right now. Please try again in a moment." },
       { status: 502 }
     );
   }
 
-  if (webhookResult.skipped) {
-    console.info("[lead:contact] LEADS_WEBHOOK_URL not set. Payload kept in logs.", lead);
+  if (allSkipped) {
+    console.info("[lead:contact] No delivery channel configured (webhook/email). Payload kept in logs.", lead);
+  }
+
+  if (webhookResult.error) {
+    console.warn("[lead:contact] Webhook delivery issue:", webhookResult.error);
+  }
+
+  if (emailResult.error) {
+    console.warn("[lead:contact] Email delivery issue:", emailResult.error);
   }
 
   return NextResponse.json(

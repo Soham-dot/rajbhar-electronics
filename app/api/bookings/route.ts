@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { sendBookingLeadEmail } from "@/lib/server/email";
 import {
   buildBookingWhatsappUrl,
   isValidPhone,
@@ -136,15 +137,42 @@ export async function POST(request: Request) {
   };
 
   const webhookResult = await sendLeadToWebhook(lead);
-  if (!webhookResult.delivered && !webhookResult.skipped) {
+
+  const emailResult = await sendBookingLeadEmail({
+    bookingId,
+    createdAt,
+    name,
+    phone,
+    address,
+    date,
+    time,
+    cart,
+    appliedCoupon,
+    discount,
+    total,
+    finalTotal,
+  });
+
+  const hasDelivered = webhookResult.delivered || emailResult.delivered;
+  const allSkipped = webhookResult.skipped && emailResult.skipped;
+
+  if (!hasDelivered && !allSkipped) {
     return NextResponse.json(
       { ok: false, error: "Unable to confirm booking right now. Please try again." },
       { status: 502 }
     );
   }
 
-  if (webhookResult.skipped) {
-    console.info("[lead:booking] LEADS_WEBHOOK_URL not set. Payload kept in logs.", lead);
+  if (allSkipped) {
+    console.info("[lead:booking] No delivery channel configured (webhook/email). Payload kept in logs.", lead);
+  }
+
+  if (webhookResult.error) {
+    console.warn("[lead:booking] Webhook delivery issue:", webhookResult.error);
+  }
+
+  if (emailResult.error) {
+    console.warn("[lead:booking] Email delivery issue:", emailResult.error);
   }
 
   return NextResponse.json(
