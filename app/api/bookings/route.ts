@@ -1,13 +1,17 @@
 import { NextResponse } from "next/server";
-import { storeBookingLead } from "@/lib/server/db";
+import {
+  hasBookingCouponUsage,
+  logCouponReuseBlockedAttempt,
+  storeBookingLead,
+} from "@/lib/server/db";
 import { sendBookingLeadEmail } from "@/lib/server/email";
+import { applyCoupon, type CartItem } from "@/lib/booking-data";
 import {
   buildBookingWhatsappUrl,
   isValidPhone,
   normalizePhone,
   sanitizeText,
   sendLeadToWebhook,
-  type LeadCartItem,
 } from "@/lib/server/leads";
 
 interface BookingRequestBody {
@@ -21,34 +25,40 @@ interface BookingRequestBody {
   discount?: unknown;
 }
 
-function normalizeCart(cartInput: unknown): LeadCartItem[] {
+function normalizeCart(cartInput: unknown): CartItem[] {
   if (!Array.isArray(cartInput)) return [];
 
-  const normalizedItems: LeadCartItem[] = [];
+  const normalizedItems: CartItem[] = [];
 
   for (const item of cartInput) {
     if (!item || typeof item !== "object") continue;
 
     const entry = item as {
+      serviceId?: unknown;
+      issueId?: unknown;
       serviceName?: unknown;
       issueName?: unknown;
       quantity?: unknown;
       price?: unknown;
     };
 
+    const serviceId = sanitizeText(entry.serviceId, 80);
+    const issueId = sanitizeText(entry.issueId, 80);
     const serviceName = sanitizeText(entry.serviceName, 80);
     const issueName = sanitizeText(entry.issueName, 80);
 
     const quantity = Number(entry.quantity);
     const price = Number(entry.price);
 
-    if (!serviceName || !issueName) continue;
+    if (!serviceId || !issueId || !serviceName || !issueName) continue;
     if (!Number.isFinite(quantity) || !Number.isFinite(price)) continue;
 
     const safeQuantity = Math.max(1, Math.floor(quantity));
     const safePrice = Math.max(0, Math.floor(price));
 
     normalizedItems.push({
+      serviceId,
+      issueId,
       serviceName,
       issueName,
       quantity: safeQuantity,
@@ -76,9 +86,7 @@ export async function POST(request: Request) {
   const address = sanitizeText(body.address, 220);
   const date = sanitizeText(body.date, 30);
   const time = sanitizeText(body.time, 30);
-  const appliedCoupon = sanitizeText(body.appliedCoupon, 30);
-  const discountInput = Number(body.discount);
-  const discount = Number.isFinite(discountInput) ? Math.max(0, Math.floor(discountInput)) : 0;
+  const requestedCoupon = sanitizeText(body.appliedCoupon, 30).toUpperCase();
 
   if (name.length < 2) {
     return NextResponse.json(
@@ -110,6 +118,66 @@ export async function POST(request: Request) {
   }
 
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  let appliedCoupon = "";
+  let discount = 0;
+  if (requestedCoupon) {
+    try {
+      const alreadyUsed = await hasBookingCouponUsage(phone, requestedCoupon);
+      if (alreadyUsed) {
+        const blockedAt = new Date().toISOString();
+        const blockedLogResult = await logCouponReuseBlockedAttempt({
+          source: "website-booking-form",
+          createdAt: blockedAt,
+          userAgent: request.headers.get("user-agent") ?? "unknown",
+          name,
+          phone,
+          address,
+          date,
+          time,
+          attemptedCoupon: requestedCoupon,
+          cart,
+          total,
+        });
+
+        if (blockedLogResult.error) {
+          console.warn(
+            "[lead:coupon_blocked] Failed to store blocked attempt:",
+            blockedLogResult.error
+          );
+        }
+
+        return NextResponse.json(
+          {
+            ok: false,
+            error: "This coupon code has already been used with this phone number.",
+          },
+          { status: 409 }
+        );
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Unable to validate coupon right now.";
+      return NextResponse.json(
+        { ok: false, error: message },
+        { status: 503 }
+      );
+    }
+
+    const couponResult = applyCoupon(requestedCoupon, cart);
+    if (!couponResult.valid) {
+      return NextResponse.json(
+        { ok: false, error: couponResult.message },
+        { status: 400 }
+      );
+    }
+
+    appliedCoupon = requestedCoupon;
+    discount = couponResult.discount;
+  }
+
   const finalTotal = Math.max(0, total - discount);
 
   const createdAt = new Date().toISOString();

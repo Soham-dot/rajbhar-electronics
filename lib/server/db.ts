@@ -11,7 +11,7 @@ export interface LeadStorageResult {
 export type LeadStatus = "in_process" | "closed";
 
 interface LeadInsertInput {
-  leadType: "contact" | "booking";
+  leadType: "contact" | "booking" | "coupon_blocked";
   source: string;
   bookingId: string | null;
   name: string;
@@ -34,6 +34,14 @@ export interface AdminLeadRow {
   payload: unknown;
   status: LeadStatus;
   created_at: string;
+}
+
+function normalizePhoneKey(phone: string): string {
+  const digits = phone.replace(/\D/g, "");
+  if (!digits) {
+    return "";
+  }
+  return digits.length > 10 ? digits.slice(-10) : digits;
 }
 
 function getDatabaseUrl(): string {
@@ -69,6 +77,7 @@ async function ensureLeadsTable(): Promise<void> {
           booking_id TEXT,
           name TEXT NOT NULL,
           phone TEXT NOT NULL,
+          phone_key TEXT NOT NULL,
           payload JSONB NOT NULL,
           status TEXT NOT NULL DEFAULT 'in_process',
           created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -80,9 +89,15 @@ async function ensureLeadsTable(): Promise<void> {
       await sql`ALTER TABLE leads ADD COLUMN IF NOT EXISTS booking_id TEXT;`;
       await sql`ALTER TABLE leads ADD COLUMN IF NOT EXISTS payload JSONB;`;
       await sql`ALTER TABLE leads ADD COLUMN IF NOT EXISTS status TEXT;`;
+      await sql`ALTER TABLE leads ADD COLUMN IF NOT EXISTS phone_key TEXT;`;
 
       await sql`UPDATE leads SET source = 'website' WHERE source IS NULL;`;
       await sql`UPDATE leads SET payload = '{}'::jsonb WHERE payload IS NULL;`;
+      await sql`
+        UPDATE leads
+        SET phone_key = RIGHT(REGEXP_REPLACE(phone, '[^0-9]', '', 'g'), 10)
+        WHERE phone_key IS NULL OR phone_key = '';
+      `;
       await sql`
         UPDATE leads
         SET status = 'in_process'
@@ -93,12 +108,16 @@ async function ensureLeadsTable(): Promise<void> {
       await sql`ALTER TABLE leads ALTER COLUMN source SET NOT NULL;`;
       await sql`ALTER TABLE leads ALTER COLUMN payload SET DEFAULT '{}'::jsonb;`;
       await sql`ALTER TABLE leads ALTER COLUMN payload SET NOT NULL;`;
+      await sql`ALTER TABLE leads ALTER COLUMN phone_key SET DEFAULT '';`;
+      await sql`ALTER TABLE leads ALTER COLUMN phone_key SET NOT NULL;`;
       await sql`ALTER TABLE leads ALTER COLUMN status SET DEFAULT 'in_process';`;
       await sql`ALTER TABLE leads ALTER COLUMN status SET NOT NULL;`;
 
       await sql`CREATE INDEX IF NOT EXISTS leads_lead_type_idx ON leads (lead_type);`;
       await sql`CREATE INDEX IF NOT EXISTS leads_created_at_idx ON leads (created_at DESC);`;
       await sql`CREATE INDEX IF NOT EXISTS leads_booking_id_idx ON leads (booking_id);`;
+      await sql`CREATE INDEX IF NOT EXISTS leads_phone_idx ON leads (phone);`;
+      await sql`CREATE INDEX IF NOT EXISTS leads_phone_key_idx ON leads (phone_key);`;
       await sql`CREATE INDEX IF NOT EXISTS leads_status_idx ON leads (status);`;
     })();
   }
@@ -175,6 +194,46 @@ export async function updateLeadStatus(
   return mapAdminLeadRow(rows[0]);
 }
 
+export async function hasBookingCouponUsage(
+  phone: string,
+  couponCode: string
+): Promise<boolean> {
+  const normalizedPhoneKey = normalizePhoneKey(phone);
+  const normalizedCoupon = couponCode.trim().toUpperCase();
+  if (!normalizedPhoneKey || !normalizedCoupon) {
+    return false;
+  }
+
+  const sql = getSqlClient();
+  if (!sql) {
+    throw new Error(
+      "Database is not configured. Coupon validation requires POSTGRES_URL or DATABASE_URL."
+    );
+  }
+
+  await ensureLeadsTable();
+
+  const rows = await sql`
+    SELECT 1
+    FROM leads
+    WHERE lead_type = 'booking'
+      AND COALESCE(
+        NULLIF(phone_key, ''),
+        RIGHT(REGEXP_REPLACE(phone, '[^0-9]', '', 'g'), 10)
+      ) = ${normalizedPhoneKey}
+      AND UPPER(
+        COALESCE(
+          payload->'pricing'->>'appliedCoupon',
+          payload->>'appliedCoupon',
+          ''
+        )
+      ) = ${normalizedCoupon}
+    LIMIT 1;
+  `;
+
+  return Array.isArray(rows) && rows.length > 0;
+}
+
 function normalizeLeadStatus(value: unknown): LeadStatus {
   return value === "closed" ? "closed" : "in_process";
 }
@@ -214,6 +273,7 @@ async function insertLead(input: LeadInsertInput): Promise<LeadStorageResult> {
   try {
     await ensureLeadsTable();
 
+    const phoneKey = normalizePhoneKey(input.phone);
     const payloadJson = JSON.stringify(input.payload);
     const rows = await sql`
       INSERT INTO leads (
@@ -222,6 +282,7 @@ async function insertLead(input: LeadInsertInput): Promise<LeadStorageResult> {
         booking_id,
         name,
         phone,
+        phone_key,
         payload,
         created_at
       )
@@ -231,6 +292,7 @@ async function insertLead(input: LeadInsertInput): Promise<LeadStorageResult> {
         ${input.bookingId},
         ${input.name},
         ${input.phone},
+        ${phoneKey},
         ${payloadJson}::jsonb,
         ${input.createdAt}::timestamptz
       )
@@ -320,6 +382,53 @@ export async function storeBookingLead(
     leadType: "booking",
     source: input.source,
     bookingId: input.bookingId,
+    name: input.name,
+    phone: input.phone,
+    payload,
+    createdAt: input.createdAt,
+  });
+}
+
+export async function logCouponReuseBlockedAttempt(input: {
+  source: string;
+  createdAt: string;
+  userAgent: string;
+  name: string;
+  phone: string;
+  address: string;
+  date: string;
+  time: string;
+  attemptedCoupon: string;
+  cart: BookingLead["cart"];
+  total: number;
+}): Promise<LeadStorageResult> {
+  const payload = {
+    type: "coupon_blocked",
+    source: input.source,
+    createdAt: input.createdAt,
+    userAgent: input.userAgent,
+    blockReason: "Coupon reuse blocked for this phone number",
+    attemptedCoupon: input.attemptedCoupon,
+    customer: {
+      name: input.name,
+      phone: input.phone,
+      address: input.address,
+      date: input.date,
+      time: input.time,
+    },
+    cart: input.cart,
+    pricing: {
+      total: input.total,
+      discount: 0,
+      finalTotal: input.total,
+      appliedCoupon: input.attemptedCoupon,
+    },
+  };
+
+  return insertLead({
+    leadType: "coupon_blocked",
+    source: input.source,
+    bookingId: null,
     name: input.name,
     phone: input.phone,
     payload,

@@ -22,6 +22,7 @@ type LeadDetails = {
   queryText: string;
   fullAddress: string;
   coupon: string;
+  blockReason: string;
 };
 
 type SessionInfo = {
@@ -34,7 +35,7 @@ type SessionInfo = {
   ttlSeconds: number;
 };
 
-type FilterType = "all" | "contact" | "booking";
+type FilterType = "all" | "contact" | "booking" | "coupon_blocked";
 
 function formatDateTime(value: string): string {
   const date = new Date(value);
@@ -122,10 +123,15 @@ function deriveLeadDetails(lead: Lead): LeadDetails {
 
   const issueText = asText(payload?.issue);
   const tvBrand = asText(payload?.tvBrand);
+  const blockReason = asText(payload?.blockReason) || asText(payload?.reason);
 
   let queryText = issueText;
   if (!queryText && tvBrand) {
     queryText = `TV Brand: ${tvBrand}`;
+  }
+
+  if (!queryText && lead.lead_type === "coupon_blocked" && blockReason) {
+    queryText = blockReason;
   }
 
   if (!queryText && Array.isArray(payload?.cart)) {
@@ -153,13 +159,17 @@ function deriveLeadDetails(lead: Lead): LeadDetails {
     queryText = cartSummary;
   }
 
-  const coupon = asText(pricing?.appliedCoupon) || asText(payload?.appliedCoupon);
+  const coupon =
+    asText(payload?.attemptedCoupon) ||
+    asText(pricing?.appliedCoupon) ||
+    asText(payload?.appliedCoupon);
 
   return {
     location,
     queryText: queryText || "-",
     fullAddress: fullAddress || "-",
     coupon: coupon || "No coupon",
+    blockReason: blockReason || "-",
   };
 }
 
@@ -406,6 +416,7 @@ export default function AdminDashboard() {
               details.queryText,
               details.fullAddress,
               details.coupon,
+              details.blockReason,
             ]
               .join(" ")
               .toLowerCase()
@@ -418,6 +429,9 @@ export default function AdminDashboard() {
   const totalLeads = leads.length;
   const bookingLeads = leads.filter((lead) => lead.lead_type === "booking").length;
   const contactLeads = leads.filter((lead) => lead.lead_type === "contact").length;
+  const couponBlockedLeads = leads.filter(
+    (lead) => lead.lead_type === "coupon_blocked"
+  ).length;
   const todayLeads = leads.filter((lead) => isToday(lead.created_at)).length;
   const inProcessLeads = leads.filter(
     (lead) => normalizeStatus(lead.status) === "in_process"
@@ -515,10 +529,11 @@ export default function AdminDashboard() {
           ) : null}
         </section>
 
-        <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-7">
           <StatCard label="Total Leads" value={String(totalLeads)} />
           <StatCard label="Booking Leads" value={String(bookingLeads)} />
           <StatCard label="Contact Leads" value={String(contactLeads)} />
+          <StatCard label="Coupon Blocks" value={String(couponBlockedLeads)} />
           <StatCard label="In Process" value={String(inProcessLeads)} />
           <StatCard label="Closed" value={String(closedLeads)} />
           <StatCard label="Today" value={String(todayLeads)} />
@@ -529,7 +544,7 @@ export default function AdminDashboard() {
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search by name, number, location, address, query, coupon or lead ID"
+              placeholder="Search by name, number, location, address, query, coupon, block reason or lead ID"
               className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none ring-offset-2 focus:border-gray-500 focus:ring-2 focus:ring-gray-400 dark:border-gray-700 dark:bg-gray-900"
             />
             <select
@@ -540,6 +555,7 @@ export default function AdminDashboard() {
               <option value="all">All Types</option>
               <option value="booking">Booking</option>
               <option value="contact">Contact</option>
+              <option value="coupon_blocked">Coupon Blocked</option>
             </select>
             <select
               value={statusFilter}
@@ -587,6 +603,7 @@ export default function AdminDashboard() {
                     <th className="px-4 py-3">Repair Query</th>
                     <th className="px-4 py-3">Complete Address</th>
                     <th className="px-4 py-3">Coupon</th>
+                    <th className="px-4 py-3">Block Reason</th>
                     <th className="px-4 py-3">Status</th>
                     <th className="px-4 py-3">Created</th>
                   </tr>
@@ -608,7 +625,9 @@ export default function AdminDashboard() {
                             className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
                               lead.lead_type === "booking"
                                 ? "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200"
-                                : "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200"
+                                : lead.lead_type === "coupon_blocked"
+                                  ? "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200"
+                                  : "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200"
                             }`}
                           >
                             {lead.lead_type}
@@ -620,6 +639,7 @@ export default function AdminDashboard() {
                         <td className="px-4 py-3 min-w-[260px]">{details.queryText}</td>
                         <td className="px-4 py-3 min-w-[240px]">{details.fullAddress}</td>
                         <td className="px-4 py-3 whitespace-nowrap">{details.coupon}</td>
+                        <td className="px-4 py-3 min-w-[240px]">{details.blockReason}</td>
                         <td className="px-4 py-3">
                           <div className="flex flex-col gap-1">
                             <select
