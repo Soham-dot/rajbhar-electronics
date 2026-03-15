@@ -108,7 +108,7 @@ export async function POST(request: Request) {
   return NextResponse.json(
     {
       ok: true,
-      message: "Booking request received. We'll call you within 15 minutes.",
+      message: "Contact request received. We'll call you within 15 minutes.",
       whatsappUrl: buildContactWhatsappUrl({ name, phone, tvBrand, issue }),
       createdAt,
     },

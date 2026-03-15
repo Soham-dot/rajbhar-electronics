@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from "crypto";
 
 export const ADMIN_SESSION_COOKIE = "admin_session";
+const DEFAULT_ADMIN_SESSION_SECRET = "change-this-admin-session-secret";
 
 interface SessionTokenPayload {
   u: string;
@@ -22,6 +23,10 @@ function getEnv(name: string): string {
   return process.env[name]?.trim() || "";
 }
 
+function isProductionEnv(): boolean {
+  return process.env.NODE_ENV === "production";
+}
+
 export function getAdminUsername(): string {
   return getEnv("ADMIN_USERNAME");
 }
@@ -30,8 +35,32 @@ function getAdminPassword(): string {
   return getEnv("ADMIN_PASSWORD");
 }
 
+function getConfiguredSessionSecret(): string {
+  return getEnv("ADMIN_SESSION_SECRET");
+}
+
+function hasUsableSessionSecret(): boolean {
+  const configuredSecret = getConfiguredSessionSecret();
+
+  if (!configuredSecret) {
+    return !isProductionEnv();
+  }
+
+  if (isProductionEnv() && configuredSecret === DEFAULT_ADMIN_SESSION_SECRET) {
+    return false;
+  }
+
+  return true;
+}
+
 function getSessionSecret(): string {
-  return getEnv("ADMIN_SESSION_SECRET") || "change-this-admin-session-secret";
+  const configuredSecret = getConfiguredSessionSecret();
+
+  if (configuredSecret) {
+    return configuredSecret;
+  }
+
+  return isProductionEnv() ? "" : DEFAULT_ADMIN_SESSION_SECRET;
 }
 
 export function getAdminSessionTtlSeconds(): number {
@@ -42,7 +71,33 @@ export function getAdminSessionTtlSeconds(): number {
 }
 
 export function isAdminAuthConfigured(): boolean {
-  return Boolean(getAdminUsername() && getAdminPassword());
+  return getAdminAuthConfigError() === null;
+}
+
+export function getAdminAuthConfigError(): string | null {
+  const username = getAdminUsername();
+  const password = getAdminPassword();
+
+  if (!username || !password) {
+    return "Admin authentication is not configured. Set ADMIN_USERNAME and ADMIN_PASSWORD in environment variables.";
+  }
+
+  const sessionSecret = getConfiguredSessionSecret();
+  if (isProductionEnv()) {
+    if (!sessionSecret) {
+      return "Admin session secret is not configured. Set ADMIN_SESSION_SECRET in Vercel project environment variables.";
+    }
+
+    if (sessionSecret === DEFAULT_ADMIN_SESSION_SECRET) {
+      return "ADMIN_SESSION_SECRET cannot use the default placeholder value in production.";
+    }
+
+    if (sessionSecret.length < 32) {
+      return "ADMIN_SESSION_SECRET must be at least 32 characters in production.";
+    }
+  }
+
+  return null;
 }
 
 export function validateAdminCredentials(
@@ -94,6 +149,10 @@ export function createAdminSessionToken(options?: {
   username?: string;
   ttlSeconds?: number;
 }): string {
+  if (!hasUsableSessionSecret()) {
+    return "";
+  }
+
   const username = options?.username?.trim() || getAdminUsername();
   if (!username) {
     return "";
@@ -149,6 +208,10 @@ function parsePayload(encodedPayload: string): SessionTokenPayload | null {
 export function getAdminSessionFromToken(
   token: string | undefined
 ): AdminSessionData | null {
+  if (!hasUsableSessionSecret()) {
+    return null;
+  }
+
   if (!token) {
     return null;
   }

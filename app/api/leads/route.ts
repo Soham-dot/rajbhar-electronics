@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getLeads } from "../../../lib/server/db";
+import { getLeads } from "@/lib/server/db";
 import { cookies } from "next/headers";
 import { ADMIN_SESSION_COOKIE, isValidAdminSessionToken } from "@/lib/server/admin-auth";
 

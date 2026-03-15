@@ -1,53 +1,52 @@
 # Rajbhar Electronics
 
-A production-level website for Rajbhar Electronics — Mumbai's most trusted TV repair service since 1996, based in Chunabhatti.
+Production-ready website for Rajbhar Electronics (TV repair service), built with Next.js App Router.
 
 ## Tech Stack
 
-- **Next.js 15** (App Router)
-- **TypeScript**
-- **Tailwind CSS**
-- **Lucide React** (icons)
+- Next.js 15
+- React 18
+- TypeScript
+- Tailwind CSS
+- Neon Postgres (`@neondatabase/serverless`)
 
-## Getting Started
-
-> ⚠️ **Important (Windows/OneDrive users):**
->
-> If this project is stored inside a OneDrive-synced folder, Next.js builds can fail due to Windows symlink/reparse-point issues. For best results, copy this project to a non-synced directory such as `C:\Projects\rajbhar-electronics` and run the commands from there.
+## Local Development
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open `http://localhost:3000`.
 
-## Build & Deploy
+## Environment Variables
+
+Copy `.env.example` to `.env.local` and fill values.
+
+Admin/auth variables:
+- `ADMIN_USERNAME`
+- `ADMIN_PASSWORD`
+- `ADMIN_SESSION_SECRET`
+- `ADMIN_SESSION_TTL_HOURS` (optional)
+
+Database variables:
+- `POSTGRES_URL`
+- `DATABASE_URL` (optional fallback)
+
+Lead notification variables (optional):
+- `LEADS_WEBHOOK_URL`
+- `RESEND_API_KEY`
+- `LEADS_FROM_EMAIL`
+- `LEADS_NOTIFY_EMAIL`
+
+## Production (Vercel)
+
+For complete hosting setup, see:
+- [VERCEL_SETUP.md](./VERCEL_SETUP.md)
+
+## Build
 
 ```bash
 npm run build
 npm start
-```
-
-## Project Structure
-
-```
-rajbhar-electronics/
-├── app/
-│   ├── layout.tsx          # Root layout with metadata, Inter font
-│   ├── page.tsx            # Home page composing all sections
-│   └── globals.css         # Global styles + Tailwind directives
-├── components/
-│   ├── TopBar.tsx           # Location announcement bar
-│   ├── Navbar.tsx           # Navigation with mobile menu
-│   ├── Hero.tsx             # Hero section
-│   ├── Stats.tsx            # Trust/stats counters
-│   ├── Services.tsx         # Services grid
-│   ├── HowItWorks.tsx       # Process steps
-│   ├── Reviews.tsx          # Testimonials
-│   ├── Contact.tsx          # Contact form + info
-│   └cd "C:\Users\Admin\OneDrive\Desktop\GITHUB WEBSITE PROJECT\rajbhar-electronics-main\rajbhar-electronics-main"
-git initgit remote add origin https://github.com/Soham-dot/rajbhar-electronics.git
-git branch -M main
-git push -u origin main── Footer.tsx           # Footer
 ```

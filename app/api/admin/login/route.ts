@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import {
   ADMIN_SESSION_COOKIE,
   createAdminSessionToken,
+  getAdminAuthConfigError,
   getAdminSessionTtlSeconds,
-  isAdminAuthConfigured,
   validateAdminCredentials,
 } from "@/lib/server/admin-auth";
 
@@ -13,11 +13,11 @@ interface LoginBody {
 }
 
 export async function POST(request: Request) {
-  if (!isAdminAuthConfigured()) {
+  const configError = getAdminAuthConfigError();
+  if (configError) {
     return NextResponse.json(
       {
-        error:
-          "Admin authentication is not configured. Set ADMIN_USERNAME and ADMIN_PASSWORD in .env.local.",
+        error: configError,
       },
       { status: 500 }
     );
@@ -33,6 +33,16 @@ export async function POST(request: Request) {
 
   const ttlSeconds = getAdminSessionTtlSeconds();
   const sessionToken = createAdminSessionToken({ username, ttlSeconds });
+  if (!sessionToken) {
+    return NextResponse.json(
+      {
+        error:
+          "Unable to create admin session token. Check ADMIN_SESSION_SECRET configuration in environment variables.",
+      },
+      { status: 500 }
+    );
+  }
+
   const response = NextResponse.json({ ok: true });
   response.cookies.set({
     name: ADMIN_SESSION_COOKIE,

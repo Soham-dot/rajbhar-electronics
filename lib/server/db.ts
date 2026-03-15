@@ -110,7 +110,7 @@ export async function getLeads(): Promise<AdminLeadRow[]> {
   const sql = getSqlClient();
   if (!sql) {
     throw new Error(
-      "Database is not configured. Set POSTGRES_URL or DATABASE_URL in .env.local and restart the server."
+      "Database is not configured. Set POSTGRES_URL or DATABASE_URL in environment variables (.env.local for local development, Vercel Project Settings for production) and redeploy/restart."
     );
   }
 
@@ -145,7 +145,7 @@ export async function updateLeadStatus(
   const sql = getSqlClient();
   if (!sql) {
     throw new Error(
-      "Database is not configured. Set POSTGRES_URL or DATABASE_URL in .env.local and restart the server."
+      "Database is not configured. Set POSTGRES_URL or DATABASE_URL in environment variables (.env.local for local development, Vercel Project Settings for production) and redeploy/restart."
     );
   }
 
