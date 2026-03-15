@@ -31,18 +31,41 @@ Add these keys to **Production** (and Preview if needed):
 ### Optional session duration
 - `ADMIN_SESSION_TTL_HOURS` = session lifetime in hours (example: `9`)
 
-## 2) Redeploy after saving variables
+## 2) Configure GitHub secrets for automatic deploy
 
-After env changes, trigger a fresh deployment so server functions pick up new values.
+This repo now includes:
+- `.github/workflows/deploy-vercel.yml`
 
-## 3) Verify admin flow
+It deploys to Vercel production automatically after `CI Build and Lint` succeeds on `main`.
+
+Add these repository secrets in GitHub:
+- `Settings -> Secrets and variables -> Actions -> New repository secret`
+
+Required secrets:
+- `VERCEL_TOKEN`
+- `VERCEL_ORG_ID`
+- `VERCEL_PROJECT_ID`
+
+How to get them:
+- `VERCEL_TOKEN`: Vercel dashboard -> Account Settings -> Tokens
+- `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID`:
+  - Run `npx vercel link` locally once, then open `.vercel/project.json`
+  - Copy `orgId` and `projectId` into GitHub secrets
+
+## 3) Trigger deployment
+
+- Push to `main` and GitHub Actions will deploy automatically.
+- You can also run the workflow manually from Actions:
+  - `Deploy to Vercel Production` -> `Run workflow`
+
+## 4) Verify admin flow
 
 1. Visit `/admin/login`
 2. Login with `ADMIN_USERNAME` and `ADMIN_PASSWORD`
 3. Open `/admin`
 4. Confirm session stays active and lead list loads
 
-## 4) Common production issues
+## 5) Common production issues
 
 - `Unauthorized` on admin API:
   - Session cookie may be missing/expired. Login again.
@@ -50,6 +73,8 @@ After env changes, trigger a fresh deployment so server functions pick up new va
   - Add `ADMIN_SESSION_SECRET` in Vercel and redeploy.
 - `Database is not configured`:
   - Add `POSTGRES_URL` or `DATABASE_URL` in Vercel and redeploy.
+- Deploy workflow fails with missing secret:
+  - Add `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` in GitHub Actions secrets.
 
 ## Security notes
 
