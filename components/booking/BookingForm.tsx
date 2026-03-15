@@ -10,9 +10,16 @@ interface BookingFormProps {
   onBack: () => void;
   appliedCoupon: string | null;
   discount: number;
+  onCouponBlocked?: () => void;
 }
 
-export default function BookingForm({ cart, onBack, appliedCoupon, discount }: BookingFormProps) {
+export default function BookingForm({
+  cart,
+  onBack,
+  appliedCoupon,
+  discount,
+  onCouponBlocked,
+}: BookingFormProps) {
   const [step, setStep] = useState<"details" | "confirmed">("details");
   const [form, setForm] = useState({
     name: "",
@@ -27,12 +34,57 @@ export default function BookingForm({ cart, onBack, appliedCoupon, discount }: B
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const finalTotal = Math.max(0, total - discount);
 
+  const handleCouponAlreadyUsed = (message: string) => {
+    onCouponBlocked?.();
+    if (typeof window !== "undefined") {
+      window.alert(message);
+    }
+    setSubmitError(`${message} Coupon has been removed for this booking.`);
+  };
+
+  const validateCouponForPhone = async (): Promise<boolean> => {
+    if (!appliedCoupon || !form.phone.trim()) {
+      return true;
+    }
+
+    const response = await fetch("/api/bookings/coupon-check", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        phone: form.phone,
+        coupon: appliedCoupon,
+      }),
+    });
+
+    const data = (await response.json().catch(() => null)) as
+      | { used?: boolean; error?: string }
+      | null;
+
+    if (response.status === 409 || data?.used) {
+      handleCouponAlreadyUsed(
+        data?.error || "This coupon code has already been used with this phone number."
+      );
+      return false;
+    }
+
+    if (!response.ok) {
+      throw new Error(data?.error || "Unable to validate coupon right now.");
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitError("");
     setIsSubmitting(true);
 
     try {
+      const isCouponAllowed = await validateCouponForPhone();
+      if (!isCouponAllowed) {
+        return;
+      }
+
       const response = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -44,9 +96,23 @@ export default function BookingForm({ cart, onBack, appliedCoupon, discount }: B
         }),
       });
 
-      const data = (await response.json()) as { error?: string };
+      const data = (await response.json().catch(() => null)) as
+        | { error?: string }
+        | null;
       if (!response.ok) {
-        throw new Error(data.error || "Unable to submit booking right now.");
+        const errorMessage = data?.error || "Unable to submit booking right now.";
+        const isCouponAlreadyUsedError =
+          response.status === 409 &&
+          /coupon/i.test(errorMessage) &&
+          /already/i.test(errorMessage) &&
+          /used/i.test(errorMessage);
+
+        if (isCouponAlreadyUsedError) {
+          handleCouponAlreadyUsed(errorMessage);
+          return;
+        }
+
+        throw new Error(errorMessage);
       }
 
       setStep("confirmed");
@@ -173,6 +239,15 @@ export default function BookingForm({ cart, onBack, appliedCoupon, discount }: B
                 required
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                onBlur={() => {
+                  void validateCouponForPhone().catch((error) => {
+                    setSubmitError(
+                      error instanceof Error
+                        ? error.message
+                        : "Unable to validate coupon right now."
+                    );
+                  });
+                }}
                 placeholder="+91 98765 43210"
                 className="w-full bg-white dark:bg-gray-700 border border-border text-gray-900 dark:text-white rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-accent placeholder:text-gray-400"
               />

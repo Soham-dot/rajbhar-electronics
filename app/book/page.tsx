@@ -145,7 +145,13 @@ function BookContent() {
             </div>
           </div>
         ) : (
-          <BookingForm cart={cart} onBack={() => setStep("select")} appliedCoupon={appliedCoupon} discount={discount} />
+          <BookingForm
+            cart={cart}
+            onBack={() => setStep("select")}
+            appliedCoupon={appliedCoupon}
+            discount={discount}
+            onCouponBlocked={handleRemoveCoupon}
+          />
         )}
       </div>
 
