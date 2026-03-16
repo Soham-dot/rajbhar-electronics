@@ -1,9 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft, Send, CheckCircle } from "lucide-react";
 import type { CartItem } from "@/lib/booking-data";
 import { BUSINESS } from "@/lib/constants";
+
+const EMPTY_FORM = {
+  name: "",
+  phone: "",
+  address: "",
+  date: "",
+  time: "",
+};
 
 interface BookingFormProps {
   cart: CartItem[];
@@ -21,15 +29,34 @@ export default function BookingForm({
   onCouponBlocked,
 }: BookingFormProps) {
   const [step, setStep] = useState<"details" | "confirmed">("details");
-  const [form, setForm] = useState({
-    name: "",
-    phone: "",
-    address: "",
-    date: "",
-    time: "",
-  });
+  const [form, setForm] = useState(EMPTY_FORM);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    try {
+      const raw = window.sessionStorage.getItem("booking-form-draft-v1");
+      if (!raw) return;
+
+      const parsed = JSON.parse(raw) as Partial<typeof EMPTY_FORM>;
+      setForm({
+        name: typeof parsed.name === "string" ? parsed.name : "",
+        phone: typeof parsed.phone === "string" ? parsed.phone : "",
+        address: typeof parsed.address === "string" ? parsed.address : "",
+        date: typeof parsed.date === "string" ? parsed.date : "",
+        time: typeof parsed.time === "string" ? parsed.time : "",
+      });
+    } catch {
+      // Ignore invalid draft data
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.sessionStorage.setItem("booking-form-draft-v1", JSON.stringify(form));
+  }, [form]);
 
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const finalTotal = Math.max(0, total - discount);
@@ -116,6 +143,10 @@ export default function BookingForm({
       }
 
       setStep("confirmed");
+      if (typeof window !== "undefined") {
+        window.sessionStorage.removeItem("booking-form-draft-v1");
+        window.sessionStorage.removeItem("booking-cart-draft-v1");
+      }
     } catch (error) {
       setSubmitError(
         error instanceof Error

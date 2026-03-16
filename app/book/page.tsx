@@ -9,7 +9,7 @@ import {
   useRef,
   useEffect,
 } from "react";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Star, Timer, ShieldCheck } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -21,11 +21,14 @@ import ServiceDetailsSheet from "@/components/booking/ServiceDetailsSheet";
 import { BOOKING_SERVICES, type CartItem } from "@/lib/booking-data";
 
 function BookContent() {
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const preselectedService = searchParams.get("service");
+  const stepFromUrl = searchParams.get("step") === "checkout" ? "checkout" : "select";
 
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [step, setStep] = useState<"select" | "checkout">("select");
+  const [step, setStep] = useState<"select" | "checkout">(stepFromUrl);
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
   const [discount, setDiscount] = useState(0);
   const [activeServiceId, setActiveServiceId] = useState<string | null>(null);
@@ -34,32 +37,8 @@ function BookContent() {
   const mobileCartRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const existingState = window.history.state as
-      | { bookingStep?: "select" | "checkout" }
-      | null;
-
-    if (!existingState?.bookingStep) {
-      window.history.replaceState(
-        { ...(existingState ?? {}), bookingStep: "select" },
-        "",
-        window.location.href
-      );
-    }
-
-    const handlePopState = (event: PopStateEvent) => {
-      const nextStep =
-        (event.state as { bookingStep?: "select" | "checkout" } | null)
-          ?.bookingStep === "checkout"
-          ? "checkout"
-          : "select";
-      setStep(nextStep);
-    };
-
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
+    setStep(stepFromUrl);
+  }, [stepFromUrl]);
 
   const handleApplyCoupon = useCallback((code: string, disc: number) => {
     setAppliedCoupon(code);
@@ -70,6 +49,48 @@ function BookContent() {
     setAppliedCoupon(null);
     setDiscount(0);
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    try {
+      const raw = window.sessionStorage.getItem("booking-cart-draft-v1");
+      if (!raw) return;
+
+      const parsed = JSON.parse(raw) as {
+        cart?: CartItem[];
+        appliedCoupon?: string | null;
+        discount?: number;
+      };
+
+      if (Array.isArray(parsed.cart)) {
+        setCart(parsed.cart);
+      }
+      if (typeof parsed.appliedCoupon === "string") {
+        setAppliedCoupon(parsed.appliedCoupon);
+      } else if (parsed.appliedCoupon === null) {
+        setAppliedCoupon(null);
+      }
+      if (typeof parsed.discount === "number" && Number.isFinite(parsed.discount)) {
+        setDiscount(Math.max(0, parsed.discount));
+      }
+    } catch {
+      // Ignore stale/invalid draft data
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    window.sessionStorage.setItem(
+      "booking-cart-draft-v1",
+      JSON.stringify({
+        cart,
+        appliedCoupon,
+        discount,
+      })
+    );
+  }, [cart, appliedCoupon, discount]);
 
   const addToCart = useCallback(
     (serviceId: string, issueId: string, serviceName: string, issueName: string, price: number) => {
@@ -151,37 +172,34 @@ function BookContent() {
     []
   );
 
+  const buildStepUrl = useCallback(
+    (nextStep: "select" | "checkout") => {
+      const params = new URLSearchParams(searchParams.toString());
+
+      if (nextStep === "checkout") {
+        params.set("step", "checkout");
+      } else {
+        params.delete("step");
+      }
+
+      const query = params.toString();
+      return query ? `${pathname}?${query}` : pathname;
+    },
+    [pathname, searchParams]
+  );
+
   const openCheckout = useCallback(() => {
     if (cart.length === 0) return;
-
-    if (typeof window !== "undefined") {
-      const existingState = window.history.state as
-        | { bookingStep?: "select" | "checkout" }
-        | null;
-      window.history.pushState(
-        { ...(existingState ?? {}), bookingStep: "checkout" },
-        "",
-        window.location.href
-      );
-    }
-
-    setStep("checkout");
-  }, [cart.length]);
+    router.push(buildStepUrl("checkout"), { scroll: false });
+  }, [buildStepUrl, cart.length, router]);
 
   const backToServices = useCallback(() => {
-    if (typeof window !== "undefined") {
-      const existingState = window.history.state as
-        | { bookingStep?: "select" | "checkout" }
-        | null;
-
-      if (existingState?.bookingStep === "checkout") {
-        window.history.back();
-        return;
-      }
+    if (step === "checkout") {
+      router.replace(buildStepUrl("select"), { scroll: false });
+      return;
     }
-
-    setStep("select");
-  }, []);
+    router.back();
+  }, [buildStepUrl, router, step]);
 
   return (
     <div className="min-h-screen bg-background dark:bg-gray-950 text-gray-900 dark:text-white">
