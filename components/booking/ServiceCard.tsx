@@ -8,17 +8,38 @@ interface ServiceCardProps {
   service: ServiceItem;
   cart: CartItem[];
   onAddToCart: (serviceId: string, issueId: string, serviceName: string, issueName: string, price: number) => void;
+  onOpenDetails?: (service: ServiceItem) => void;
   defaultExpanded?: boolean;
 }
 
-export default function ServiceCard({ service, cart, onAddToCart, defaultExpanded = false }: ServiceCardProps) {
+export default function ServiceCard({
+  service,
+  cart,
+  onAddToCart,
+  onOpenDetails,
+  defaultExpanded = false,
+}: ServiceCardProps) {
   const [expanded, setExpanded] = useState(defaultExpanded);
 
   const issueCount = service.issueTypes.length;
   const addedIssues = cart.filter((item) => item.serviceId === service.id);
+  const canOpenDetails = Boolean(onOpenDetails);
+
+  const handleCardClick = () => {
+    if (!onOpenDetails) return;
+    if (typeof window === "undefined") return;
+    if (window.innerWidth < 1024) {
+      onOpenDetails(service);
+    }
+  };
 
   return (
-    <div className="border border-border rounded-2xl bg-card dark:bg-gray-800/60 overflow-hidden transition-all hover:border-blue-accent/20">
+    <div
+      onClick={handleCardClick}
+      className={`border border-border rounded-2xl bg-card dark:bg-gray-800/60 overflow-hidden transition-all hover:border-blue-accent/20 ${
+        canOpenDetails ? "cursor-pointer lg:cursor-default" : ""
+      }`}
+    >
       {/* Main row */}
       <div className="p-5">
         <div className="flex items-start gap-4">
@@ -47,7 +68,8 @@ export default function ServiceCard({ service, cart, onAddToCart, defaultExpande
           {/* Right side - quick add button */}
           <div className="flex flex-col items-center gap-1 shrink-0">
             <button
-              onClick={() => {
+              onClick={(event) => {
+                event.stopPropagation();
                 if (!expanded) setExpanded(true);
                 else {
                   // Add the first issue type if clicking Add while expanded
@@ -60,12 +82,26 @@ export default function ServiceCard({ service, cart, onAddToCart, defaultExpande
               {addedIssues.length > 0 ? `Added (${addedIssues.reduce((t, i) => t + i.quantity, 0)})` : "Add"}
             </button>
             <button
-              onClick={() => setExpanded(!expanded)}
+              onClick={(event) => {
+                event.stopPropagation();
+                setExpanded(!expanded);
+              }}
               className="flex items-center gap-0.5 text-xs text-gray-500 dark:text-gray-400 hover:text-blue-accent transition-colors"
             >
               {issueCount} options
               {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
             </button>
+            {onOpenDetails && (
+              <button
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onOpenDetails(service);
+                }}
+                className="text-[11px] text-blue-accent font-semibold underline underline-offset-2 lg:hidden"
+              >
+                View details
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -107,9 +143,10 @@ export default function ServiceCard({ service, cart, onAddToCart, defaultExpande
                       ₹{issue.price}
                     </p>
                     <button
-                      onClick={() =>
-                        onAddToCart(service.id, issue.id, service.title, issue.name, issue.price)
-                      }
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onAddToCart(service.id, issue.id, service.title, issue.name, issue.price);
+                      }}
                       className={`w-full py-1.5 rounded-lg text-xs font-bold transition-all duration-200 hover:scale-105 ${
                         inCart
                           ? "bg-blue-accent text-white"

@@ -1,6 +1,14 @@
 "use client";
 
-import { useState, useCallback, Suspense } from "react";
+import {
+  Fragment,
+  useState,
+  useCallback,
+  Suspense,
+  useMemo,
+  useRef,
+  useEffect,
+} from "react";
 import { useSearchParams } from "next/navigation";
 import { Star, Timer, ShieldCheck } from "lucide-react";
 import Navbar from "@/components/Navbar";
@@ -9,6 +17,7 @@ import TopBar from "@/components/TopBar";
 import ServiceCard from "@/components/booking/ServiceCard";
 import CartSidebar from "@/components/booking/CartSidebar";
 import BookingForm from "@/components/booking/BookingForm";
+import ServiceDetailsSheet from "@/components/booking/ServiceDetailsSheet";
 import { BOOKING_SERVICES, type CartItem } from "@/lib/booking-data";
 
 function BookContent() {
@@ -19,6 +28,10 @@ function BookContent() {
   const [step, setStep] = useState<"select" | "checkout">("select");
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
   const [discount, setDiscount] = useState(0);
+  const [activeServiceId, setActiveServiceId] = useState<string | null>(null);
+  const [lastAddedServiceId, setLastAddedServiceId] = useState<string | null>(null);
+  const [lastAddTick, setLastAddTick] = useState(0);
+  const mobileCartRef = useRef<HTMLDivElement | null>(null);
 
   const handleApplyCoupon = useCallback((code: string, disc: number) => {
     setAppliedCoupon(code);
@@ -32,6 +45,8 @@ function BookContent() {
 
   const addToCart = useCallback(
     (serviceId: string, issueId: string, serviceName: string, issueName: string, price: number) => {
+      setLastAddedServiceId(serviceId);
+      setLastAddTick((prev) => prev + 1);
       setCart((prev) => {
         const existing = prev.find(
           (item) => item.serviceId === serviceId && item.issueId === issueId
@@ -48,6 +63,39 @@ function BookContent() {
     },
     []
   );
+
+  const mobileCartAnchorServiceId = useMemo(() => {
+    if (cart.length === 0) return null;
+
+    if (
+      lastAddedServiceId &&
+      cart.some((item) => item.serviceId === lastAddedServiceId)
+    ) {
+      return lastAddedServiceId;
+    }
+
+    return cart[cart.length - 1]?.serviceId ?? null;
+  }, [cart, lastAddedServiceId]);
+
+  const activeService = useMemo(
+    () =>
+      activeServiceId
+        ? BOOKING_SERVICES.find((service) => service.id === activeServiceId) ?? null
+        : null,
+    [activeServiceId]
+  );
+
+  useEffect(() => {
+    if (lastAddTick === 0) return;
+    if (typeof window !== "undefined" && window.innerWidth >= 1024) return;
+
+    window.requestAnimationFrame(() => {
+      mobileCartRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    });
+  }, [lastAddTick]);
 
   const updateQuantity = useCallback(
     (serviceId: string, issueId: string, delta: number) => {
@@ -115,19 +163,39 @@ function BookContent() {
               </h2>
               <div className="flex flex-col gap-4">
                 {BOOKING_SERVICES.map((service) => (
-                  <ServiceCard
-                    key={service.id}
-                    service={service}
-                    cart={cart}
-                    onAddToCart={addToCart}
-                    defaultExpanded={service.title === preselectedService}
-                  />
+                  <Fragment key={service.id}>
+                    <ServiceCard
+                      service={service}
+                      cart={cart}
+                      onAddToCart={addToCart}
+                      onOpenDetails={(selectedService) => {
+                        setActiveServiceId(selectedService.id);
+                      }}
+                      defaultExpanded={service.title === preselectedService}
+                    />
+                    {mobileCartAnchorServiceId === service.id && cart.length > 0 && (
+                      <div ref={mobileCartRef} className="lg:hidden">
+                        <CartSidebar
+                          cart={cart}
+                          onUpdateQuantity={updateQuantity}
+                          onRemove={removeFromCart}
+                          onCheckout={() => {
+                            if (cart.length > 0) setStep("checkout");
+                          }}
+                          appliedCoupon={appliedCoupon}
+                          discount={discount}
+                          onApplyCoupon={handleApplyCoupon}
+                          onRemoveCoupon={handleRemoveCoupon}
+                        />
+                      </div>
+                    )}
+                  </Fragment>
                 ))}
               </div>
             </div>
 
             {/* Right — Cart sidebar (sticky) */}
-            <div className="lg:col-span-1">
+            <div className="hidden lg:block lg:col-span-1">
               <div className="sticky top-24">
                 <CartSidebar
                   cart={cart}
@@ -154,6 +222,15 @@ function BookContent() {
           />
         )}
       </div>
+
+      <ServiceDetailsSheet
+        open={Boolean(activeService)}
+        service={activeService}
+        cart={cart}
+        onClose={() => setActiveServiceId(null)}
+        onAddToCart={addToCart}
+        onUpdateQuantity={updateQuantity}
+      />
 
       <Footer />
     </div>

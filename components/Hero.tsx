@@ -128,7 +128,7 @@ export default function Hero() {
 
         {/* Service selector card */}
         <div className="bg-card dark:bg-gray-800 border border-border rounded-2xl p-4 md:p-6 max-w-3xl mx-auto mb-8 shadow-2xl">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-y-2">
             <div className="flex flex-col gap-1">
               <label className="text-xs text-muted dark:text-gray-400 uppercase tracking-wider font-semibold text-left">
                 Service
@@ -137,7 +137,7 @@ export default function Hero() {
                 <select
                   value={selectedService}
                   onChange={(e) => setSelectedService(e.target.value)}
-                  className="w-full bg-white dark:bg-gray-700 border border-border text-gray-900 dark:text-white rounded-lg px-3 py-2.5 text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-blue-accent pr-8"
+                  className="w-full h-11 bg-white dark:bg-gray-700 border border-border text-gray-900 dark:text-white rounded-lg px-3 text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-blue-accent pr-8"
                 >
                   <option value="">Select a service</option>
                   {services.map((s) => (
@@ -160,18 +160,9 @@ export default function Hero() {
                   placeholder="Search for your location/society/apartment"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  className="w-full bg-white dark:bg-gray-700 border border-border text-gray-900 dark:text-white rounded-lg pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-accent placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                  className="w-full h-11 bg-white dark:bg-gray-700 border border-border text-gray-900 dark:text-white rounded-lg pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-accent placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 />
               </div>
-              <button
-                type="button"
-                onClick={handleUseCurrentLocation}
-                disabled={locating}
-                className="flex items-center gap-2 text-blue-accent hover:text-blue-accent/80 text-xs font-medium mt-1 text-left transition-colors disabled:opacity-50"
-              >
-                <LocateFixed className={`w-3.5 h-3.5 ${locating ? "animate-spin" : ""}`} />
-                {locating ? "Detecting location..." : "Use current location"}
-              </button>
             </div>
             <div className="flex items-end">
               <a
@@ -179,11 +170,21 @@ export default function Hero() {
                 onClick={(e) => {
                   if (!location.trim()) e.preventDefault();
                 }}
-                className="w-full font-semibold py-2.5 px-6 rounded-xl transition-all duration-200 hover:scale-105 text-sm text-center bg-blue-accent hover:bg-blue-accent/90 text-white"
+                className="w-full h-11 font-semibold px-6 rounded-xl transition-all duration-200 hover:scale-105 text-sm text-center bg-blue-accent hover:bg-blue-accent/90 text-white flex items-center justify-center"
               >
                 Book Now
               </a>
             </div>
+
+            <button
+              type="button"
+              onClick={handleUseCurrentLocation}
+              disabled={locating}
+              className="flex items-center gap-2 text-blue-accent hover:text-blue-accent/80 text-xs font-medium text-left transition-colors disabled:opacity-50 md:col-start-2"
+            >
+              <LocateFixed className={`w-3.5 h-3.5 ${locating ? "animate-spin" : ""}`} />
+              {locating ? "Detecting location..." : "Use current location"}
+            </button>
           </div>
         </div>
 
