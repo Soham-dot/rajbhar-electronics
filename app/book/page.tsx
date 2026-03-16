@@ -33,6 +33,34 @@ function BookContent() {
   const [lastAddTick, setLastAddTick] = useState(0);
   const mobileCartRef = useRef<HTMLDivElement | null>(null);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const existingState = window.history.state as
+      | { bookingStep?: "select" | "checkout" }
+      | null;
+
+    if (!existingState?.bookingStep) {
+      window.history.replaceState(
+        { ...(existingState ?? {}), bookingStep: "select" },
+        "",
+        window.location.href
+      );
+    }
+
+    const handlePopState = (event: PopStateEvent) => {
+      const nextStep =
+        (event.state as { bookingStep?: "select" | "checkout" } | null)
+          ?.bookingStep === "checkout"
+          ? "checkout"
+          : "select";
+      setStep(nextStep);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
   const handleApplyCoupon = useCallback((code: string, disc: number) => {
     setAppliedCoupon(code);
     setDiscount(disc);
@@ -123,6 +151,38 @@ function BookContent() {
     []
   );
 
+  const openCheckout = useCallback(() => {
+    if (cart.length === 0) return;
+
+    if (typeof window !== "undefined") {
+      const existingState = window.history.state as
+        | { bookingStep?: "select" | "checkout" }
+        | null;
+      window.history.pushState(
+        { ...(existingState ?? {}), bookingStep: "checkout" },
+        "",
+        window.location.href
+      );
+    }
+
+    setStep("checkout");
+  }, [cart.length]);
+
+  const backToServices = useCallback(() => {
+    if (typeof window !== "undefined") {
+      const existingState = window.history.state as
+        | { bookingStep?: "select" | "checkout" }
+        | null;
+
+      if (existingState?.bookingStep === "checkout") {
+        window.history.back();
+        return;
+      }
+    }
+
+    setStep("select");
+  }, []);
+
   return (
     <div className="min-h-screen bg-background dark:bg-gray-950 text-gray-900 dark:text-white">
       <TopBar />
@@ -179,9 +239,7 @@ function BookContent() {
                           cart={cart}
                           onUpdateQuantity={updateQuantity}
                           onRemove={removeFromCart}
-                          onCheckout={() => {
-                            if (cart.length > 0) setStep("checkout");
-                          }}
+                          onCheckout={openCheckout}
                           appliedCoupon={appliedCoupon}
                           discount={discount}
                           onApplyCoupon={handleApplyCoupon}
@@ -201,9 +259,7 @@ function BookContent() {
                   cart={cart}
                   onUpdateQuantity={updateQuantity}
                   onRemove={removeFromCart}
-                  onCheckout={() => {
-                    if (cart.length > 0) setStep("checkout");
-                  }}
+                  onCheckout={openCheckout}
                   appliedCoupon={appliedCoupon}
                   discount={discount}
                   onApplyCoupon={handleApplyCoupon}
@@ -215,7 +271,7 @@ function BookContent() {
         ) : (
           <BookingForm
             cart={cart}
-            onBack={() => setStep("select")}
+            onBack={backToServices}
             appliedCoupon={appliedCoupon}
             discount={discount}
             onCouponBlocked={handleRemoveCoupon}
