@@ -9,7 +9,7 @@ import {
   useRef,
   useEffect,
 } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Star, Timer, ShieldCheck } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -21,7 +21,6 @@ import ServiceDetailsSheet from "@/components/booking/ServiceDetailsSheet";
 import { BOOKING_SERVICES, type CartItem } from "@/lib/booking-data";
 
 function BookContent() {
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const preselectedService = searchParams.get("service");
@@ -35,10 +34,6 @@ function BookContent() {
   const [lastAddedServiceId, setLastAddedServiceId] = useState<string | null>(null);
   const [lastAddTick, setLastAddTick] = useState(0);
   const mobileCartRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    setStep(stepFromUrl);
-  }, [stepFromUrl]);
 
   const handleApplyCoupon = useCallback((code: string, disc: number) => {
     setAppliedCoupon(code);
@@ -174,7 +169,11 @@ function BookContent() {
 
   const buildStepUrl = useCallback(
     (nextStep: "select" | "checkout") => {
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(
+        typeof window !== "undefined"
+          ? window.location.search
+          : searchParams.toString()
+      );
 
       if (nextStep === "checkout") {
         params.set("step", "checkout");
@@ -188,18 +187,73 @@ function BookContent() {
     [pathname, searchParams]
   );
 
+  useEffect(() => {
+    setStep(stepFromUrl);
+  }, [stepFromUrl]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handlePopState = () => {
+      if (window.location.pathname !== pathname) return;
+      const params = new URLSearchParams(window.location.search);
+      const nextStep = params.get("step") === "checkout" ? "checkout" : "select";
+      setStep(nextStep);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (stepFromUrl !== "checkout") return;
+
+    const state = (window.history.state as { bookingSeededCheckout?: boolean } | null) ?? {};
+    if (state.bookingSeededCheckout) return;
+
+    const selectUrl = buildStepUrl("select");
+    const checkoutUrl = buildStepUrl("checkout");
+
+    window.history.replaceState(
+      { ...state, bookingSeededCheckout: true },
+      "",
+      selectUrl
+    );
+    window.history.pushState(
+      { ...state, bookingSeededCheckout: true },
+      "",
+      checkoutUrl
+    );
+    setStep("checkout");
+  }, [buildStepUrl, stepFromUrl]);
+
   const openCheckout = useCallback(() => {
     if (cart.length === 0) return;
-    router.push(buildStepUrl("checkout"), { scroll: false });
-  }, [buildStepUrl, cart.length, router]);
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("step") !== "checkout") {
+        window.history.pushState(window.history.state, "", buildStepUrl("checkout"));
+      }
+    }
+    setStep("checkout");
+  }, [buildStepUrl, cart.length]);
 
   const backToServices = useCallback(() => {
     if (step === "checkout") {
-      router.replace(buildStepUrl("select"), { scroll: false });
+      setStep("select");
+      if (typeof window !== "undefined") {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("step") === "checkout") {
+          window.history.replaceState(window.history.state, "", buildStepUrl("select"));
+        }
+      }
       return;
     }
-    router.back();
-  }, [buildStepUrl, router, step]);
+    if (typeof window !== "undefined") {
+      window.history.back();
+    }
+  }, [buildStepUrl, step]);
 
   return (
     <div className="min-h-screen bg-background dark:bg-gray-950 text-gray-900 dark:text-white">
