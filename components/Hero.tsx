@@ -16,6 +16,7 @@ export default function Hero() {
   const [selectedService, setSelectedService] = useState("");
   const [location, setLocation] = useState("");
   const [locating, setLocating] = useState(false);
+  const bookingHref = `/book${selectedService ? `?service=${encodeURIComponent(selectedService)}` : ""}`;
 
   const handleUseCurrentLocation = () => {
     if (!navigator.geolocation) return;
@@ -167,10 +168,7 @@ export default function Hero() {
             </div>
 
             <a
-              href={!location.trim() ? undefined : `/book${selectedService ? `?service=${encodeURIComponent(selectedService)}` : ""}`}
-              onClick={(e) => {
-                if (!location.trim()) e.preventDefault();
-              }}
+              href={bookingHref}
               className="w-full h-11 font-semibold px-6 rounded-xl transition-all duration-200 hover:scale-105 text-sm text-center bg-blue-accent hover:bg-blue-accent/90 text-white flex items-center justify-center"
             >
               Book Now
@@ -224,10 +222,7 @@ export default function Hero() {
             </div>
 
             <a
-              href={!location.trim() ? undefined : `/book${selectedService ? `?service=${encodeURIComponent(selectedService)}` : ""}`}
-              onClick={(e) => {
-                if (!location.trim()) e.preventDefault();
-              }}
+              href={bookingHref}
               className="md:col-span-4 w-full h-11 font-semibold px-6 rounded-xl transition-all duration-200 hover:scale-105 text-sm text-center bg-blue-accent hover:bg-blue-accent/90 text-white flex items-center justify-center"
             >
               Book Now
