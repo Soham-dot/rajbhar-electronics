@@ -18,6 +18,11 @@ export default function Hero() {
   const [locating, setLocating] = useState(false);
   const bookingHref = `/book${selectedService ? `?service=${encodeURIComponent(selectedService)}` : ""}`;
 
+  const handleBookNowClick = () => {
+    if (typeof window === "undefined") return;
+    window.location.href = bookingHref;
+  };
+
   const handleUseCurrentLocation = () => {
     if (!navigator.geolocation) return;
     setLocating(true);
@@ -167,12 +172,13 @@ export default function Hero() {
               </div>
             </div>
 
-            <a
-              href={bookingHref}
+            <button
+              type="button"
+              onClick={handleBookNowClick}
               className="w-full h-11 font-semibold px-6 rounded-xl transition-all duration-200 hover:scale-105 text-sm text-center bg-blue-accent hover:bg-blue-accent/90 text-white flex items-center justify-center"
             >
               Book Now
-            </a>
+            </button>
 
             <button
               type="button"
@@ -221,12 +227,13 @@ export default function Hero() {
               />
             </div>
 
-            <a
-              href={bookingHref}
+            <button
+              type="button"
+              onClick={handleBookNowClick}
               className="md:col-span-4 w-full h-11 font-semibold px-6 rounded-xl transition-all duration-200 hover:scale-105 text-sm text-center bg-blue-accent hover:bg-blue-accent/90 text-white flex items-center justify-center"
             >
               Book Now
-            </a>
+            </button>
 
             <button
               type="button"
