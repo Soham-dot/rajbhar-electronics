@@ -232,6 +232,13 @@ function BookContent() {
     setStep("checkout");
   }, [buildStepUrl]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }, [step]);
+
   const openCheckout = useCallback(() => {
     if (cart.length === 0) return;
     if (typeof window !== "undefined") {

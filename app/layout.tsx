@@ -25,7 +25,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Rajbhar Electronics – TV Repair Service in Mumbai",
+  title: "Rajbhar Electronics - TV Repair Service in Mumbai",
   description:
     "Mumbai's most trusted TV repair service since 1996. LED, LCD, Smart TV, CRT repair at your doorstep across all Mumbai. Call now for same-day service.",
   keywords: [
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(`https://${BUSINESS.domain}`),
   alternates: { canonical: "/" },
   openGraph: {
-    title: "Rajbhar Electronics – TV Repair Service in Chunabhatti, Mumbai",
+    title: "Rajbhar Electronics - TV Repair Service in Chunabhatti, Mumbai",
     description:
       "Mumbai's most trusted TV repair service since 1996. LED, LCD, Smart TV, CRT repair at your doorstep.",
     url: `https://${BUSINESS.domain}`,
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Rajbhar Electronics – TV Repair Service in Chunabhatti, Mumbai",
+    title: "Rajbhar Electronics - TV Repair Service in Chunabhatti, Mumbai",
     description:
       "Mumbai's most trusted TV repair service since 1996. LED, LCD, Smart TV, CRT repair at your doorstep.",
   },
@@ -75,7 +75,7 @@ export default function RootLayout({
                   const theme = localStorage.getItem('theme');
                   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
                   const shouldBeDark = theme === 'dark' || (!theme && prefersDark);
-                  
+
                   if (shouldBeDark) {
                     document.documentElement.classList.add('dark');
                     document.documentElement.style.backgroundColor = '#0a0a0a';
@@ -88,7 +88,7 @@ export default function RootLayout({
           suppressHydrationWarning
         />
       </head>
-      <body className="page-gradient text-black dark:text-white min-h-screen">
+      <body className="page-gradient text-black dark:text-white min-h-screen pb-[88px] md:pb-0">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -115,7 +115,7 @@ export default function RootLayout({
                 ratingValue: BUSINESS.googleRating,
                 reviewCount: "150",
               },
-              priceRange: "₹199–₹4999",
+              priceRange: "Rs199-Rs4999",
               description:
                 "Mumbai's most trusted TV repair service since 1996. LED, LCD, Smart TV, CRT repair at your doorstep.",
             }),
@@ -123,9 +123,7 @@ export default function RootLayout({
         />
         <ThemeProvider>
           <LoadingScreen />
-          <PageTransition>
-            {children}
-          </PageTransition>
+          <PageTransition>{children}</PageTransition>
           <WhatsAppButton />
         </ThemeProvider>
       </body>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowLeft, Send, CheckCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle, Send } from "lucide-react";
 import type { CartItem } from "@/lib/booking-data";
 import { BUSINESS } from "@/lib/constants";
 
@@ -126,6 +126,7 @@ export default function BookingForm({
       const data = (await response.json().catch(() => null)) as
         | { error?: string }
         | null;
+
       if (!response.ok) {
         const errorMessage = data?.error || "Unable to submit booking right now.";
         const isCouponAlreadyUsedError =
@@ -174,7 +175,6 @@ export default function BookingForm({
           Our technician will call you at <strong className="text-gray-900 dark:text-white">{form.phone}</strong> within 15 minutes to confirm the appointment.
         </p>
 
-        {/* Order summary */}
         <div className="bg-card dark:bg-gray-800 border border-border rounded-2xl p-5 text-left mb-6">
           <h3 className="font-bold text-gray-900 dark:text-white text-sm mb-3">Order Summary</h3>
           <div className="divide-y divide-border">
@@ -182,9 +182,9 @@ export default function BookingForm({
               <div key={`${item.serviceId}-${item.issueId}`} className="flex justify-between py-2">
                 <div>
                   <p className="text-sm text-gray-900 dark:text-white">{item.serviceName}</p>
-                  <p className="text-xs text-gray-500">{item.issueName} × {item.quantity}</p>
+                  <p className="text-xs text-gray-500">{item.issueName} x {item.quantity}</p>
                 </div>
-                <p className="text-sm font-bold text-gray-900 dark:text-white">₹{item.price * item.quantity}</p>
+                <p className="text-sm font-bold text-gray-900 dark:text-white">Rs{item.price * item.quantity}</p>
               </div>
             ))}
           </div>
@@ -193,17 +193,17 @@ export default function BookingForm({
               <>
                 <div className="flex justify-between mb-1">
                   <p className="text-sm text-gray-500">Subtotal</p>
-                  <p className="text-sm text-gray-500 line-through">₹{total}</p>
+                  <p className="text-sm text-gray-500 line-through">Rs{total}</p>
                 </div>
                 <div className="flex justify-between mb-2">
                   <p className="text-sm text-emerald-600 dark:text-emerald-400">Coupon ({appliedCoupon})</p>
-                  <p className="text-sm text-emerald-600 dark:text-emerald-400">-₹{discount}</p>
+                  <p className="text-sm text-emerald-600 dark:text-emerald-400">-Rs{discount}</p>
                 </div>
               </>
             )}
             <div className="flex justify-between">
               <p className="font-bold text-gray-900 dark:text-white">Total</p>
-              <p className="font-bold text-blue-accent text-lg">₹{finalTotal}</p>
+              <p className="font-bold text-blue-accent text-lg">Rs{finalTotal}</p>
             </div>
           </div>
         </div>
@@ -230,7 +230,6 @@ export default function BookingForm({
 
   return (
     <div className="max-w-2xl mx-auto">
-      {/* Back to services */}
       <button
         onClick={onBack}
         className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-blue-accent mb-6 transition-all duration-200 hover:scale-105"
@@ -240,7 +239,6 @@ export default function BookingForm({
       </button>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Form */}
         <div className="lg:col-span-3 bg-card dark:bg-gray-800/60 border border-border rounded-2xl p-6">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Complete Your Booking</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Enter your details and we&apos;ll schedule the service</p>
@@ -294,7 +292,7 @@ export default function BookingForm({
                 className="w-full bg-white dark:bg-gray-700 border border-border text-gray-900 dark:text-white rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-accent placeholder:text-gray-400"
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Preferred Date</label>
                 <input
@@ -334,12 +332,11 @@ export default function BookingForm({
               className="w-full flex items-center justify-center gap-2 bg-blue-accent hover:bg-blue-accent/90 text-white font-bold py-3.5 rounded-xl transition-all duration-200 hover:scale-105 text-sm mt-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               <Send className="w-4 h-4" />
-              {isSubmitting ? "Submitting Booking..." : `Confirm Booking · ₹${finalTotal}`}
+              {isSubmitting ? "Submitting Booking..." : `Confirm Booking � Rs${finalTotal}`}
             </button>
           </form>
         </div>
 
-        {/* Order summary */}
         <div className="lg:col-span-2">
           <div className="bg-card dark:bg-gray-800/60 border border-border rounded-2xl p-5 sticky top-24">
             <h3 className="font-bold text-gray-900 dark:text-white text-sm mb-4">Order Summary</h3>
@@ -348,9 +345,9 @@ export default function BookingForm({
                 <div key={`${item.serviceId}-${item.issueId}`} className="flex justify-between">
                   <div>
                     <p className="text-sm text-gray-900 dark:text-white">{item.serviceName}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{item.issueName} × {item.quantity}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{item.issueName} x {item.quantity}</p>
                   </div>
-                  <p className="text-sm font-bold text-gray-900 dark:text-white">₹{item.price * item.quantity}</p>
+                  <p className="text-sm font-bold text-gray-900 dark:text-white">Rs{item.price * item.quantity}</p>
                 </div>
               ))}
             </div>
@@ -359,17 +356,17 @@ export default function BookingForm({
                 <>
                   <div className="flex justify-between mb-1">
                     <p className="text-sm text-gray-500">Subtotal</p>
-                    <p className="text-sm text-gray-500 line-through">₹{total}</p>
+                    <p className="text-sm text-gray-500 line-through">Rs{total}</p>
                   </div>
                   <div className="flex justify-between mb-2">
                     <p className="text-sm text-emerald-600 dark:text-emerald-400">Coupon ({appliedCoupon})</p>
-                    <p className="text-sm text-emerald-600 dark:text-emerald-400">-₹{discount}</p>
+                    <p className="text-sm text-emerald-600 dark:text-emerald-400">-Rs{discount}</p>
                   </div>
                 </>
               )}
               <div className="flex justify-between">
                 <p className="font-bold text-gray-900 dark:text-white">Total</p>
-                <p className="font-bold text-blue-accent text-xl">₹{finalTotal}</p>
+                <p className="font-bold text-blue-accent text-xl">Rs{finalTotal}</p>
               </div>
             </div>
           </div>

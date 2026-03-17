@@ -70,7 +70,7 @@ export default function Contact() {
 
             {submitted && (
               <div className="mb-4 bg-green-500/10 border border-green-500/30 rounded-xl p-3 text-green-400 text-sm">
-                ✅ Booking received! We&apos;ll call you within 15 minutes.
+                Booking received! We&apos;ll call you within 15 minutes.
               </div>
             )}
 
@@ -184,7 +184,7 @@ export default function Contact() {
                   <div>
                     <p className="text-sm font-semibold text-gray-900 dark:text-white">Business Hours</p>
                     <p className="text-sm text-gray-400">{BUSINESS.hours}</p>
-                    <p className="text-xs text-green-accent mt-0.5">● Open Now</p>
+                    <p className="text-xs text-green-accent mt-0.5">Open now</p>
                   </div>
                 </div>
               </div>
@@ -197,8 +197,8 @@ export default function Contact() {
                   <MapPin className="w-6 h-6 text-blue-accent" />
                 </div>
                 <div className="text-center">
-                  <p className="text-white font-semibold text-sm">Find Us on Google Maps</p>
-                  <p className="text-gray-500 dark:text-gray-400 text-xs mt-0.5">{BUSINESS.address}</p>
+                  <p className="text-gray-900 dark:text-white font-semibold text-sm">Find Us on Google Maps</p>
+                  <p className="text-gray-600 dark:text-gray-400 text-xs mt-0.5 max-w-xs">{BUSINESS.address}</p>
                 </div>
                 <a
                   href={BUSINESS.mapsUrl}
@@ -216,7 +216,7 @@ export default function Contact() {
               href={BUSINESS.whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-3 rounded-2xl py-4 font-semibold text-white transition-all hover:opacity-90 bg-whatsapp"
+              className="hidden md:flex items-center justify-center gap-3 rounded-2xl py-4 font-semibold text-white transition-all hover:opacity-90 bg-whatsapp"
             >
               <MessageCircle className="w-5 h-5" />
               Chat on WhatsApp for Instant Support
@@ -227,3 +227,4 @@ export default function Contact() {
     </section>
   );
 }
+
