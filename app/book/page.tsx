@@ -24,10 +24,10 @@ function BookContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const preselectedService = searchParams.get("service");
-  const stepFromUrl = searchParams.get("step") === "checkout" ? "checkout" : "select";
+  const initialStep = searchParams.get("step") === "checkout" ? "checkout" : "select";
 
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [step, setStep] = useState<"select" | "checkout">(stepFromUrl);
+  const [step, setStep] = useState<"select" | "checkout">(initialStep);
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
   const [discount, setDiscount] = useState(0);
   const [activeServiceId, setActiveServiceId] = useState<string | null>(null);
@@ -170,9 +170,7 @@ function BookContent() {
   const buildStepUrl = useCallback(
     (nextStep: "select" | "checkout") => {
       const params = new URLSearchParams(
-        typeof window !== "undefined"
-          ? window.location.search
-          : searchParams.toString()
+        typeof window !== "undefined" ? window.location.search : ""
       );
 
       if (nextStep === "checkout") {
@@ -184,12 +182,8 @@ function BookContent() {
       const query = params.toString();
       return query ? `${pathname}?${query}` : pathname;
     },
-    [pathname, searchParams]
+    [pathname]
   );
-
-  useEffect(() => {
-    setStep(stepFromUrl);
-  }, [stepFromUrl]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -207,7 +201,8 @@ function BookContent() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (stepFromUrl !== "checkout") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("step") !== "checkout") return;
 
     const state = (window.history.state as { bookingSeededCheckout?: boolean } | null) ?? {};
     if (state.bookingSeededCheckout) return;
@@ -226,7 +221,7 @@ function BookContent() {
       checkoutUrl
     );
     setStep("checkout");
-  }, [buildStepUrl, stepFromUrl]);
+  }, [buildStepUrl]);
 
   const openCheckout = useCallback(() => {
     if (cart.length === 0) return;
