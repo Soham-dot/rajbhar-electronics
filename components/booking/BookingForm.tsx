@@ -332,7 +332,7 @@ export default function BookingForm({
               className="w-full flex items-center justify-center gap-2 bg-blue-accent hover:bg-blue-accent/90 text-white font-bold py-3.5 rounded-xl transition-all duration-200 hover:scale-105 text-sm mt-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               <Send className="w-4 h-4" />
-              {isSubmitting ? "Submitting Booking..." : `Confirm Booking · Rs${finalTotal}`}
+              {isSubmitting ? "Submitting Booking..." : `Confirm Booking - Rs${finalTotal}`}
             </button>
           </form>
         </div>
