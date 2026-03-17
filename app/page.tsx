@@ -2,6 +2,7 @@ import TopBar from "@/components/TopBar";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import TrustBadges from "@/components/TrustBadges";
+import TrustProofSection from "@/components/TrustProofSection";
 import Promises from "@/components/Promises";
 import Stats from "@/components/Stats";
 import Services from "@/components/Services";
@@ -22,6 +23,7 @@ export default function Home() {
           <TrustBadges />
         </div>
       </section>
+      <TrustProofSection />
       <Promises />
       <Stats />
       <Services />

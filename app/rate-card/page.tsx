@@ -2,6 +2,7 @@ import { Wrench, MonitorPlay, Star, Plug, Settings } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import TopBar from "@/components/TopBar";
+import TrustProofSection from "@/components/TrustProofSection";
 
 interface RateItem {
   description: string;
@@ -257,6 +258,7 @@ export default function RateCard() {
         </div>
       </section>
 
+      <TrustProofSection />
       <Footer />
     </main>
   );
