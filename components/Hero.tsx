@@ -1,5 +1,15 @@
 "use client";
-import { MessageCircle, Phone, ChevronDown, Timer, BadgeCheck, HeartHandshake, LocateFixed, Search } from "lucide-react";
+import {
+  BadgeCheck,
+  ChevronDown,
+  HeartHandshake,
+  LocateFixed,
+  MessageCircle,
+  Phone,
+  Search,
+  Sparkles,
+  Timer,
+} from "lucide-react";
 import { useState } from "react";
 import { BUSINESS } from "@/lib/constants";
 
@@ -53,12 +63,10 @@ export default function Hero() {
   };
 
   return (
-    <section className="relative bg-background dark:bg-gray-950 pt-16 pb-24 overflow-hidden">
-      {/* Background gradient blobs */}
+    <section className="relative bg-background dark:bg-gray-950 pt-12 md:pt-16 pb-20 md:pb-24 overflow-hidden">
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-accent/15 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-green-accent/15 rounded-full blur-3xl pointer-events-none" />
 
-      {/* TV-related background illustration */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/hero-bg.svg"
@@ -69,81 +77,68 @@ export default function Hero() {
         className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-[0.15] dark:opacity-[0.12]"
         loading="eager"
       />
-      <div className="absolute inset-0 pointer-events-none dark:hidden" style={{ background: "radial-gradient(ellipse at center, transparent 40%, var(--background) 80%)" }} />
-      <div className="absolute inset-0 pointer-events-none hidden dark:block" style={{ background: "radial-gradient(ellipse at center, transparent 40%, #030712 80%)" }} />
+
+      <div
+        className="absolute inset-0 pointer-events-none dark:hidden"
+        style={{ background: "radial-gradient(ellipse at center, transparent 40%, var(--background) 80%)" }}
+      />
+      <div
+        className="absolute inset-0 pointer-events-none hidden dark:block"
+        style={{ background: "radial-gradient(ellipse at center, transparent 40%, #030712 80%)" }}
+      />
 
       <div className="relative max-w-7xl mx-auto px-4 text-center">
-        {/* Badge pills */}
-        <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
-          <span className="flex items-center gap-2 bg-card dark:bg-gray-800 border border-border rounded-full px-4 py-1.5 text-sm text-muted dark:text-gray-300">
-            <span className="w-2 h-2 rounded-full bg-green-accent animate-pulse" />
-            Serving All Mumbai
-          </span>
-          <span className="flex items-center gap-2 bg-card dark:bg-gray-800 border border-border rounded-full px-4 py-1.5 text-sm text-muted dark:text-gray-300">
-            <span className="w-2 h-2 rounded-full bg-green-accent animate-pulse" />
-            Accepting bookings Mon–Sun, 9 AM–10 PM
-          </span>
+        <div className="inline-flex items-center gap-2 rounded-full border border-blue-accent/30 bg-blue-accent/10 px-3 py-1.5 text-xs font-semibold text-blue-accent mb-5">
+          <Sparkles className="w-3.5 h-3.5" />
+          Same-day TV service in Mumbai
         </div>
 
-        {/* Availability & Warranty highlights */}
-        <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
-          <div className="flex items-center gap-2 text-sm">
-            <div className="w-8 h-8 bg-blue-accent/10 dark:bg-blue-accent/20 rounded-lg flex items-center justify-center">
-              <Timer className="w-4 h-4 text-blue-accent" />
-            </div>
-            <div className="text-left">
-              <span className="block text-xs text-gray-500 dark:text-gray-400 leading-none">Available</span>
-              <span className="block text-sm font-bold text-gray-900 dark:text-white leading-tight">In 30 mins</span>
-            </div>
-          </div>
-          <div className="w-px h-8 bg-gray-200 dark:bg-gray-700 hidden sm:block" />
-          <div className="flex items-center gap-2 text-sm">
-            <div className="w-8 h-8 bg-emerald-500/10 dark:bg-emerald-500/20 rounded-lg flex items-center justify-center">
-              <BadgeCheck className="w-4 h-4 text-emerald-500" />
-            </div>
-            <div className="text-left">
-              <span className="block text-xs text-gray-500 dark:text-gray-400 leading-none">Warranty</span>
-              <span className="block text-sm font-bold text-gray-900 dark:text-white leading-tight">Up to 180 days</span>
-            </div>
-          </div>
-          <div className="w-px h-8 bg-gray-200 dark:bg-gray-700 hidden sm:block" />
-          <div className="flex items-center gap-2 text-sm">
-            <div className="w-8 h-8 bg-amber-500/10 dark:bg-amber-500/20 rounded-lg flex items-center justify-center">
-              <HeartHandshake className="w-4 h-4 text-amber-500" />
-            </div>
-            <div className="text-left">
-              <span className="block text-xs text-gray-500 dark:text-gray-400 leading-none">Trusted by</span>
-              <span className="block text-sm font-bold text-gray-900 dark:text-white leading-tight">10,000+ customers</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Main heading */}
-        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-tight">
-          TV Repair at Your{" "}
+        <h1 className="text-3xl sm:text-5xl md:text-7xl font-extrabold tracking-tight mb-4 leading-tight">
+          TV Repair at Your {" "}
           <span className="bg-gradient-to-r from-emerald-400 to-emerald-600 bg-clip-text text-transparent">
             Doorstep
           </span>
         </h1>
 
-        {/* Subtext */}
-        <p className="text-gray-500 dark:text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-          Mumbai&apos;s most trusted TV repair service since 1996. Expert technicians at your home within{" "}
-          <span className="text-gray-900 dark:text-white font-semibold">30 minutes</span>. All brands, all models.
+        <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-lg md:text-xl max-w-2xl mx-auto mb-8 leading-relaxed">
+          Mumbai&apos;s trusted TV repair team since 1996. Verified technicians, upfront pricing, and fast home visits.
         </p>
 
-        {/* Service selector card */}
-        <div className="bg-card dark:bg-gray-800 border border-border rounded-2xl p-4 md:p-6 max-w-3xl mx-auto mb-8 shadow-2xl">
-          <div className="md:hidden flex flex-col gap-4">
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-muted dark:text-gray-400 uppercase tracking-wider font-semibold text-left">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 max-w-3xl mx-auto mb-8">
+          <div className="rounded-xl border border-border bg-card/90 dark:bg-gray-800/70 p-3 text-left">
+            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-1">
+              <Timer className="w-3.5 h-3.5 text-blue-accent" />
+              Fast Arrival
+            </div>
+            <p className="text-sm font-bold text-gray-900 dark:text-white">Technician in 30 mins</p>
+          </div>
+          <div className="rounded-xl border border-border bg-card/90 dark:bg-gray-800/70 p-3 text-left">
+            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-1">
+              <BadgeCheck className="w-3.5 h-3.5 text-emerald-500" />
+              Warranty
+            </div>
+            <p className="text-sm font-bold text-gray-900 dark:text-white">Up to 180 days</p>
+          </div>
+          <div className="rounded-xl border border-border bg-card/90 dark:bg-gray-800/70 p-3 text-left">
+            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-1">
+              <HeartHandshake className="w-3.5 h-3.5 text-amber-500" />
+              Social Proof
+            </div>
+            <p className="text-sm font-bold text-gray-900 dark:text-white">10,000+ bookings</p>
+          </div>
+        </div>
+
+        <div className="bg-card dark:bg-gray-800 border border-border rounded-2xl p-4 md:p-6 max-w-4xl mx-auto mb-6 shadow-2xl">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+            <div className="md:col-span-4 text-left">
+              <label className="text-xs text-muted dark:text-gray-400 uppercase tracking-wider font-semibold mb-1.5 block">
                 Service
               </label>
               <div className="relative">
                 <select
                   value={selectedService}
                   onChange={(e) => setSelectedService(e.target.value)}
-                  className="w-full h-11 bg-white dark:bg-gray-700 border border-border text-gray-900 dark:text-white rounded-lg px-3 text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-blue-accent pr-8"
+                  className="w-full h-12 bg-white dark:bg-gray-700 border border-border text-gray-900 dark:text-white rounded-xl px-3 text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-blue-accent pr-8"
                 >
                   <option value="">Select a service</option>
                   {services.map((s) => (
@@ -152,22 +147,22 @@ export default function Hero() {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted dark:text-gray-400 pointer-events-none" />
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted dark:text-gray-400 pointer-events-none" />
               </div>
             </div>
 
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-muted dark:text-gray-400 uppercase tracking-wider font-semibold text-left">
+            <div className="md:col-span-5 text-left">
+              <label className="text-xs text-muted dark:text-gray-400 uppercase tracking-wider font-semibold mb-1.5 block">
                 Location
               </label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                 <input
                   type="text"
-                  placeholder="Search for your location/society/apartment"
+                  placeholder="Search your location or society"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  className="w-full h-11 bg-white dark:bg-gray-700 border border-border text-gray-900 dark:text-white rounded-lg pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-accent placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                  className="w-full h-12 bg-white dark:bg-gray-700 border border-border text-gray-900 dark:text-white rounded-xl pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-accent placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 />
               </div>
             </div>
@@ -175,11 +170,13 @@ export default function Hero() {
             <button
               type="button"
               onClick={handleBookNowClick}
-              className="w-full h-11 font-semibold px-6 rounded-xl transition-all duration-200 hover:scale-105 text-sm text-center bg-blue-accent hover:bg-blue-accent/90 text-white flex items-center justify-center"
+              className="md:col-span-3 w-full h-12 font-bold px-6 rounded-xl transition-all duration-200 hover:scale-[1.02] text-sm text-center bg-blue-accent hover:bg-blue-accent/90 text-white flex items-center justify-center"
             >
               Book Now
             </button>
+          </div>
 
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
             <button
               type="button"
               onClick={handleUseCurrentLocation}
@@ -189,69 +186,30 @@ export default function Hero() {
               <LocateFixed className={`w-3.5 h-3.5 ${locating ? "animate-spin" : ""}`} />
               {locating ? "Detecting location..." : "Use current location"}
             </button>
-          </div>
 
-          <div className="hidden md:grid md:grid-cols-12 md:gap-x-4 md:gap-y-2 md:items-start">
-            <label className="md:col-span-4 text-xs text-muted dark:text-gray-400 uppercase tracking-wider font-semibold text-left">
-              Service
-            </label>
-            <label className="md:col-span-4 text-xs text-muted dark:text-gray-400 uppercase tracking-wider font-semibold text-left">
-              Location
-            </label>
-            <span className="md:col-span-4" />
-
-            <div className="relative md:col-span-4">
-              <select
-                value={selectedService}
-                onChange={(e) => setSelectedService(e.target.value)}
-                className="w-full h-11 bg-white dark:bg-gray-700 border border-border text-gray-900 dark:text-white rounded-lg px-3 text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-blue-accent pr-8"
-              >
-                <option value="">Select a service</option>
-                {services.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted dark:text-gray-400 pointer-events-none" />
+            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide max-w-full pb-1">
+              {services.slice(0, 4).map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setSelectedService(s)}
+                  className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+                    selectedService === s
+                      ? "border-blue-accent bg-blue-accent text-white"
+                      : "border-border bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300"
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
             </div>
-
-            <div className="relative md:col-span-4">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-              <input
-                type="text"
-                placeholder="Search for your location/society/apartment"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                className="w-full h-11 bg-white dark:bg-gray-700 border border-border text-gray-900 dark:text-white rounded-lg pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-accent placeholder:text-gray-400 dark:placeholder:text-gray-500"
-              />
-            </div>
-
-            <button
-              type="button"
-              onClick={handleBookNowClick}
-              className="md:col-span-4 w-full h-11 font-semibold px-6 rounded-xl transition-all duration-200 hover:scale-105 text-sm text-center bg-blue-accent hover:bg-blue-accent/90 text-white flex items-center justify-center"
-            >
-              Book Now
-            </button>
-
-            <button
-              type="button"
-              onClick={handleUseCurrentLocation}
-              disabled={locating}
-              className="md:col-span-4 md:col-start-5 flex items-center gap-2 text-blue-accent hover:text-blue-accent/80 text-xs font-medium text-left transition-colors disabled:opacity-50"
-            >
-              <LocateFixed className={`w-3.5 h-3.5 ${locating ? "animate-spin" : ""}`} />
-              {locating ? "Detecting location..." : "Use current location"}
-            </button>
           </div>
         </div>
 
-        {/* CTA buttons */}
-        <div className="flex flex-wrap items-center justify-center gap-4">
+        <div className="hidden sm:flex flex-wrap items-center justify-center gap-3">
           <a
             href={`tel:${BUSINESS.phoneRaw}`}
-            className="flex items-center gap-2 border border-gray-300 dark:border-white/20 hover:border-gray-500 dark:hover:border-white/40 text-gray-900 dark:text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 hover:bg-gray-100 dark:hover:bg-white/5"
+            className="flex items-center gap-2 border border-gray-300 dark:border-white/20 hover:border-gray-500 dark:hover:border-white/40 text-gray-900 dark:text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/5"
           >
             <Phone className="w-5 h-5" />
             Call Now
@@ -260,7 +218,7 @@ export default function Hero() {
             href={BUSINESS.whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 bg-whatsapp"
+            className="flex items-center gap-2 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 bg-whatsapp"
           >
             <MessageCircle className="w-5 h-5" />
             WhatsApp Us

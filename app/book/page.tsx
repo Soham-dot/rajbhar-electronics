@@ -34,6 +34,15 @@ function BookContent() {
   const [lastAddedServiceId, setLastAddedServiceId] = useState<string | null>(null);
   const [lastAddTick, setLastAddTick] = useState(0);
   const mobileCartRef = useRef<HTMLDivElement | null>(null);
+  const itemCount = useMemo(
+    () => cart.reduce((sum, item) => sum + item.quantity, 0),
+    [cart]
+  );
+  const total = useMemo(
+    () => cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
+    [cart]
+  );
+  const finalTotal = Math.max(0, total - discount);
 
   const handleApplyCoupon = useCallback((code: string, disc: number) => {
     setAppliedCoupon(code);
@@ -280,7 +289,29 @@ function BookContent() {
       </div>
 
       {/* Main content */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className={`max-w-7xl mx-auto px-4 py-8 ${step === "select" ? "pb-24 lg:pb-8" : ""}`}>
+        <div className="lg:hidden mb-4">
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card dark:bg-gray-800 px-2 py-1">
+            <span
+              className={`text-xs font-semibold rounded-full px-2.5 py-1 ${
+                step === "select"
+                  ? "bg-blue-accent text-white"
+                  : "text-gray-500 dark:text-gray-400"
+              }`}
+            >
+              1. Select
+            </span>
+            <span
+              className={`text-xs font-semibold rounded-full px-2.5 py-1 ${
+                step === "checkout"
+                  ? "bg-blue-accent text-white"
+                  : "text-gray-500 dark:text-gray-400"
+              }`}
+            >
+              2. Checkout
+            </span>
+          </div>
+        </div>
         {step === "select" ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left — Service list */}
@@ -311,6 +342,7 @@ function BookContent() {
                           discount={discount}
                           onApplyCoupon={handleApplyCoupon}
                           onRemoveCoupon={handleRemoveCoupon}
+                          showPromise={false}
                         />
                       </div>
                     )}
@@ -345,6 +377,23 @@ function BookContent() {
           />
         )}
       </div>
+
+      {step === "select" && cart.length > 0 && (
+        <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border bg-white/95 dark:bg-gray-900/95 backdrop-blur px-3 py-2 pb-[calc(env(safe-area-inset-bottom)+8px)]">
+          <button
+            onClick={openCheckout}
+            className="w-full rounded-xl bg-blue-accent text-white px-4 py-2.5 flex items-center justify-between"
+          >
+            <div className="text-left">
+              <p className="text-xs text-white/80">
+                {itemCount} item{itemCount > 1 ? "s" : ""}
+              </p>
+              <p className="text-lg font-bold">Rs{finalTotal}</p>
+            </div>
+            <span className="text-sm font-bold">Continue to checkout</span>
+          </button>
+        </div>
+      )}
 
       <ServiceDetailsSheet
         open={Boolean(activeService)}

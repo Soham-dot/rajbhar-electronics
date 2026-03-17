@@ -1,5 +1,5 @@
-﻿import Link from "next/link";
-import { MonitorPlay, Cast, TvMinimal, Drill, CalendarCheck, Siren, Star } from "lucide-react";
+import Link from "next/link";
+import { CalendarCheck, Cast, Drill, MonitorPlay, Siren, Star, TvMinimal } from "lucide-react";
 
 const services = [
   {
@@ -61,7 +61,7 @@ const services = [
     icon: Siren,
     title: "Emergency Repairs",
     description:
-      "Same-day emergency repair service. We're available 7 days a week for urgent TV issues.",
+      "Same-day emergency repair service. We are available 7 days a week for urgent TV issues.",
     mobileDescription: "Urgent same-day support for power, display, and startup issues.",
     price: "Rs499",
     rating: 4.7,
@@ -74,48 +74,58 @@ export default function Services() {
   return (
     <section id="services" className="bg-background dark:bg-gray-950 py-20">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="text-center mb-14">
+        <div className="text-center mb-10 md:mb-14">
           <span className="text-blue-accent text-sm font-semibold uppercase tracking-wider">
             What We Fix
           </span>
-          <h2 className="text-4xl font-extrabold text-gray-900 dark:text-white mt-2 mb-4">Our Services</h2>
-          <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white mt-2 mb-3">
+            Our Services
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto text-sm md:text-base">
             From old CRTs to the latest OLED smart TVs, we repair and install them at your home.
           </p>
         </div>
 
-        <div className="sm:hidden -mx-4 px-4 overflow-x-auto pb-2">
+        <div className="sm:hidden -mx-4 px-4 overflow-x-auto scrollbar-hide pb-3">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">Swipe to explore services</p>
+            <p className="text-xs text-blue-accent font-semibold">Big tap cards</p>
+          </div>
           <div className="flex gap-4 snap-x snap-mandatory">
             {services.map((service) => {
               const Icon = service.icon;
               return (
                 <div
                   key={`mobile-${service.title}`}
-                  className="min-w-[280px] max-w-[280px] snap-start bg-card dark:bg-gray-800 border border-border rounded-2xl p-5"
+                  className="min-w-[86vw] max-w-[320px] snap-start border border-border rounded-2xl bg-card dark:bg-gray-800 overflow-hidden"
                 >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="w-10 h-10 bg-blue-accent/10 rounded-lg flex items-center justify-center">
-                      <Icon className="w-5 h-5 text-blue-accent" />
+                  <div className="h-1.5 bg-gradient-to-r from-blue-accent to-emerald-400" />
+                  <div className="p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="w-10 h-10 bg-blue-accent/10 rounded-lg flex items-center justify-center">
+                        <Icon className="w-5 h-5 text-blue-accent" />
+                      </div>
+                      <div className="text-right">
+                        <div className="inline-flex items-center gap-1 bg-amber-50 dark:bg-amber-900/30 px-2 py-1 rounded-lg">
+                          <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                          <span className="text-xs font-bold text-amber-700 dark:text-amber-400">{service.rating}</span>
+                        </div>
+                        <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">{service.reviews} reviews</p>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/30 px-2 py-1 rounded-lg">
-                      <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-                      <span className="text-xs font-bold text-amber-700 dark:text-amber-400">{service.rating}</span>
+                    <h3 className="text-base font-bold text-gray-900 dark:text-white mb-2">{service.title}</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">{service.mobileDescription}</p>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">Starts at</span>
+                      <span className="text-2xl font-extrabold text-gray-900 dark:text-white">{service.price}</span>
                     </div>
-                  </div>
-                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-2">{service.title}</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
-                    {service.mobileDescription}
-                  </p>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs text-gray-500 dark:text-gray-400">Starts at</span>
-                    <span className="text-xl font-extrabold text-gray-900 dark:text-white">{service.price}</span>
-                  </div>
                     <Link
-                    href={`/book?service=${encodeURIComponent(service.bookingTitle)}`}
-                    className="h-11 w-full rounded-xl bg-blue-accent text-white font-bold text-sm flex items-center justify-center"
-                  >
-                    Book Service
-                  </Link>
+                      href={`/book?service=${encodeURIComponent(service.bookingTitle)}`}
+                      className="h-12 w-full rounded-xl bg-blue-accent text-white font-bold text-sm flex items-center justify-center"
+                    >
+                      Book Service
+                    </Link>
+                  </div>
                 </div>
               );
             })}

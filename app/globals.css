@@ -27,6 +27,12 @@ html.dark main {
 
 body {
   font-family: var(--font-geist), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+a,
+button {
+  touch-action: manipulation;
 }
 
 @keyframes loading-bar {
@@ -89,4 +95,13 @@ html.dark .nav-gradient {
   background: linear-gradient(-45deg, #0f1729, #0f2240, #1a0f30, #0f1729, #1c1660, #0f2240);
   background-size: 400% 400%;
   animation: gradient-shift 12s ease infinite;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
