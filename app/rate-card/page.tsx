@@ -1,4 +1,5 @@
-import { Wrench, MonitorPlay, Star, Plug, Settings } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { MonitorPlay, Plug, Settings, Star, Wrench } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import TopBar from "@/components/TopBar";
@@ -11,7 +12,7 @@ interface RateItem {
 
 interface RateSection {
   title: string;
-  icon: React.ElementType;
+  icon: LucideIcon;
   items: RateItem[];
 }
 
@@ -20,43 +21,43 @@ const rateSections: RateSection[] = [
     title: "Installation / Uninstallation",
     icon: Wrench,
     items: [
-      { description: "Installation – Wall Mount 24\" ~ 26\"", price: "₹299" },
-      { description: "Installation – Wall Mount 32\" ~ 43\"", price: "₹449" },
-      { description: "Installation – Wall Mount 46\" ~ 55\"", price: "₹399" },
-      { description: "Installation – Wall Mount 65\"", price: "₹599" },
-      { description: "Installation – Wall Mount 68\" ~ 75\"", price: "₹1,000" },
-      { description: "Installation – Wall Mount 76\" ~ 85\"", price: "₹3,599" },
-      { description: "Rotating Wall Mount Stand 24\" ~ 26\"", price: "₹800" },
-      { description: "Rotating Wall Mount Stand 32\" ~ 43\"", price: "₹1,000" },
-      { description: "Rotating Wall Mount Stand 46\" ~ 55\"", price: "₹1,399" },
-      { description: "Rotating Wall Mount Stand 65\"", price: "₹1,799" },
-      { description: "Uninstallation Below 46\"", price: "₹149" },
-      { description: "Uninstallation 46\" ~ 55\"", price: "₹149" },
-      { description: "Uninstallation 65\"", price: "₹199" },
-      { description: "Uninstallation 75\" ~ 85\"", price: "₹249" },
-      { description: "Universal Wall Mount Stand 24\" ~ 26\"", price: "₹399" },
-      { description: "Universal Wall Mount Stand 32\" ~ 43\"", price: "₹599" },
-      { description: "Universal Wall Mount Stand 46\" ~ 55\"", price: "₹699" },
-      { description: "Universal Wall Mount Stand 65\"", price: "₹799" },
+      { description: "Installation - Wall Mount 24\" to 26\"", price: "Rs299" },
+      { description: "Installation - Wall Mount 32\" to 43\"", price: "Rs449" },
+      { description: "Installation - Wall Mount 46\" to 55\"", price: "Rs399" },
+      { description: "Installation - Wall Mount 65\"", price: "Rs599" },
+      { description: "Installation - Wall Mount 68\" to 75\"", price: "Rs1000" },
+      { description: "Installation - Wall Mount 76\" to 85\"", price: "Rs3599" },
+      { description: "Rotating Wall Mount Stand 24\" to 26\"", price: "Rs800" },
+      { description: "Rotating Wall Mount Stand 32\" to 43\"", price: "Rs1000" },
+      { description: "Rotating Wall Mount Stand 46\" to 55\"", price: "Rs1399" },
+      { description: "Rotating Wall Mount Stand 65\"", price: "Rs1799" },
+      { description: "Uninstallation Below 46\"", price: "Rs149" },
+      { description: "Uninstallation 46\" to 55\"", price: "Rs149" },
+      { description: "Uninstallation 65\"", price: "Rs199" },
+      { description: "Uninstallation 75\" to 85\"", price: "Rs249" },
+      { description: "Universal Wall Mount Stand 24\" to 26\"", price: "Rs399" },
+      { description: "Universal Wall Mount Stand 32\" to 43\"", price: "Rs599" },
+      { description: "Universal Wall Mount Stand 46\" to 55\"", price: "Rs699" },
+      { description: "Universal Wall Mount Stand 65\"", price: "Rs799" },
     ],
   },
   {
-    title: "TV Repair (24\" ~ 32\")",
+    title: "TV Repair (24\" to 32\")",
     icon: MonitorPlay,
     items: [
-      { description: "Backlight Set 24\" ~ 26\"", price: "₹2,200" },
+      { description: "Backlight Set 24\" to 26\"", price: "Rs2200" },
       { description: "Backlight Set 32\"", price: "On Inspection" },
       { description: "Diffuser Sheet 24\"", price: "On Inspection" },
       { description: "Diffuser Sheet 26\"", price: "On Inspection" },
       { description: "Diffuser Sheet 32\"", price: "On Inspection" },
-      { description: "Invertor Board Repair", price: "On Inspection" },
-      { description: "Invertor Board Replace (Universal)", price: "On Inspection" },
+      { description: "Inverter Board Repair", price: "On Inspection" },
+      { description: "Inverter Board Replace (Universal)", price: "On Inspection" },
       { description: "IR Function PCB Repair", price: "On Inspection" },
       { description: "LVDS Cable", price: "On Inspection" },
       { description: "Motherboard Repair", price: "On Inspection" },
       { description: "Motherboard Replace Non-Smart", price: "On Inspection" },
       { description: "Motherboard Replace Smart", price: "On Inspection" },
-      { description: "Panel Repair 24\" ~ 26\"", price: "On Inspection" },
+      { description: "Panel Repair 24\" to 26\"", price: "On Inspection" },
       { description: "Panel Repair 32\"", price: "On Inspection" },
       { description: "Panel Replacement HD Ready", price: "On Inspection" },
       { description: "Panel Replacement FHD", price: "On Inspection" },
@@ -68,13 +69,13 @@ const rateSections: RateSection[] = [
     ],
   },
   {
-    title: "TV Repair (40\" ~ 43\")",
+    title: "TV Repair (40\" to 43\")",
     icon: MonitorPlay,
     items: [
       { description: "Backlight Set", price: "On Inspection" },
       { description: "Diffuser Sheet", price: "On Inspection" },
-      { description: "Invertor Board Repair", price: "On Inspection" },
-      { description: "Invertor Board Replace", price: "On Inspection" },
+      { description: "Inverter Board Repair", price: "On Inspection" },
+      { description: "Inverter Board Replace", price: "On Inspection" },
       { description: "IR Function PCB Repair", price: "On Inspection" },
       { description: "LVDS Cable", price: "On Inspection" },
       { description: "Motherboard Repair", price: "On Inspection" },
@@ -89,13 +90,13 @@ const rateSections: RateSection[] = [
     ],
   },
   {
-    title: "TV Repair (46\" ~ 55\")",
+    title: "TV Repair (46\" to 55\")",
     icon: MonitorPlay,
     items: [
       { description: "Backlight Set", price: "On Inspection" },
       { description: "Diffuser Sheet", price: "On Inspection" },
-      { description: "Invertor Board Repair", price: "On Inspection" },
-      { description: "Invertor Board Replace", price: "On Inspection" },
+      { description: "Inverter Board Repair", price: "On Inspection" },
+      { description: "Inverter Board Replace", price: "On Inspection" },
       { description: "IR Function PCB Repair", price: "On Inspection" },
       { description: "LVDS Cable", price: "On Inspection" },
       { description: "Motherboard Repair", price: "On Inspection" },
@@ -111,7 +112,7 @@ const rateSections: RateSection[] = [
     ],
   },
   {
-    title: "TV Repair (65\" ~ 75\")",
+    title: "TV Repair (65\" to 75\")",
     icon: MonitorPlay,
     items: [
       { description: "Backlight Set", price: "On Inspection" },
@@ -130,7 +131,7 @@ const rateSections: RateSection[] = [
     items: [
       { description: "Speaker Set", price: "On Inspection" },
       { description: "BT Remote Control", price: "On Inspection" },
-      { description: "Invertor Board Replacement", price: "On Inspection" },
+      { description: "Inverter Board Replacement", price: "On Inspection" },
       { description: "Motherboard Replacement", price: "On Inspection" },
       { description: "IR PCB Replacement", price: "On Inspection" },
       { description: "Panel Replacement", price: "On Inspection" },
@@ -176,7 +177,6 @@ export default function RateCard() {
 
       <section className="py-16">
         <div className="max-w-5xl mx-auto px-4">
-          {/* Header */}
           <div className="text-center mb-12">
             <span className="text-blue-accent text-sm font-semibold uppercase tracking-wider">
               Transparent Pricing
@@ -189,7 +189,6 @@ export default function RateCard() {
             </p>
           </div>
 
-          {/* Rate sections */}
           <div className="flex flex-col gap-10">
             {rateSections.map((section) => {
               const Icon = section.icon;
@@ -198,7 +197,6 @@ export default function RateCard() {
                   key={section.title}
                   className="bg-card dark:bg-gray-800/60 border border-border rounded-2xl overflow-hidden"
                 >
-                  {/* Section header */}
                   <div className="flex items-center gap-3 px-6 py-4 bg-blue-accent/5 dark:bg-blue-accent/10 border-b border-border">
                     <div className="w-10 h-10 bg-blue-accent/10 dark:bg-blue-accent/20 rounded-xl flex items-center justify-center">
                       <Icon className="w-5 h-5 text-blue-accent" />
@@ -208,7 +206,6 @@ export default function RateCard() {
                     </h2>
                   </div>
 
-                  {/* Table header */}
                   <div className="grid grid-cols-[1fr_auto] px-6 py-3 bg-gray-50 dark:bg-gray-800 border-b border-border">
                     <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Description
@@ -218,11 +215,10 @@ export default function RateCard() {
                     </span>
                   </div>
 
-                  {/* Items */}
                   <div>
                     {section.items.map((item, idx) => (
                       <div
-                        key={idx}
+                        key={`${section.title}-${idx}`}
                         className={`grid grid-cols-[1fr_auto] px-6 py-3 items-center ${
                           idx % 2 === 0
                             ? "bg-white dark:bg-gray-800/30"
