@@ -1,25 +1,4 @@
-import { BadgeCheck, ShieldCheck, Star, Tv, UserCheck, Wrench } from "lucide-react";
-
-const technicians = [
-  {
-    name: "Ajay Patil",
-    role: "Senior TV Technician",
-    experience: "12 years on-field experience",
-    image: "/technicians/ajay.svg",
-  },
-  {
-    name: "Ravi Shinde",
-    role: "Installation Specialist",
-    experience: "8 years wall-mount expertise",
-    image: "/technicians/ravi.svg",
-  },
-  {
-    name: "Sandeep Yadav",
-    role: "Smart TV Engineer",
-    experience: "10 years smart TV diagnostics",
-    image: "/technicians/sandeep.svg",
-  },
-];
+import { ShieldCheck, Star, Tv, UserCheck, Wrench } from "lucide-react";
 
 const proofPoints = [
   {
@@ -79,71 +58,33 @@ export default function TrustProofSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <div className="bg-card dark:bg-gray-800 border border-border rounded-2xl p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <BadgeCheck className="w-5 h-5 text-blue-accent" />
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                Meet Our Technicians
-              </h3>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {technicians.map((tech) => (
-                <div
-                  key={tech.name}
-                  className="rounded-xl border border-border bg-white dark:bg-gray-900 overflow-hidden"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={tech.image}
-                    alt={`${tech.name} - ${tech.role}`}
-                    className="w-full h-40 object-cover"
-                    loading="lazy"
-                  />
-                  <div className="p-3">
-                    <p className="text-sm font-bold text-gray-900 dark:text-white">
-                      {tech.name}
-                    </p>
-                    <p className="text-xs text-blue-accent font-semibold mt-0.5">
-                      {tech.role}
-                    </p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                      {tech.experience}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
+        <div className="bg-card dark:bg-gray-800 border border-border rounded-2xl p-5 mb-6">
+          <div className="flex items-center gap-2 mb-4">
+            <ShieldCheck className="w-5 h-5 text-blue-accent" />
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+              Service Proof & Warranty
+            </h3>
           </div>
-
-          <div className="bg-card dark:bg-gray-800 border border-border rounded-2xl p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <ShieldCheck className="w-5 h-5 text-blue-accent" />
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                Service Proof & Warranty
-              </h3>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {proofPoints.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <div
-                    key={item.title}
-                    className="rounded-xl border border-border bg-white dark:bg-gray-900 p-4"
-                  >
-                    <div className="w-9 h-9 rounded-lg bg-blue-accent/10 flex items-center justify-center mb-2">
-                      <Icon className="w-5 h-5 text-blue-accent" />
-                    </div>
-                    <p className="text-sm font-bold text-gray-900 dark:text-white">
-                      {item.title}
-                    </p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                      {item.description}
-                    </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {proofPoints.map((item) => {
+              const Icon = item.icon;
+              return (
+                <div
+                  key={item.title}
+                  className="rounded-xl border border-border bg-white dark:bg-gray-900 p-4"
+                >
+                  <div className="w-9 h-9 rounded-lg bg-blue-accent/10 flex items-center justify-center mb-2">
+                    <Icon className="w-5 h-5 text-blue-accent" />
                   </div>
-                );
-              })}
-            </div>
+                  <p className="text-sm font-bold text-gray-900 dark:text-white">
+                    {item.title}
+                  </p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                    {item.description}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </div>
 
