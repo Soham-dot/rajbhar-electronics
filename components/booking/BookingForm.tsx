@@ -1,9 +1,65 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, CheckCircle, Send } from "lucide-react";
 import type { CartItem } from "@/lib/booking-data";
 import { BUSINESS } from "@/lib/constants";
+import { createIdempotencyKey } from "@/lib/client/idempotency";
+
+const BOOKING_TIMEZONE = "Asia/Kolkata";
+const BOOKING_TIME_SLOTS = [
+  "9:00 AM",
+  "10:00 AM",
+  "11:00 AM",
+  "12:00 PM",
+  "2:00 PM",
+  "3:00 PM",
+  "4:00 PM",
+  "5:00 PM",
+  "6:00 PM",
+  "7:00 PM",
+  "8:00 PM",
+  "9:00 PM",
+  "10:00 PM",
+] as const;
+
+function parseTimeLabelToMinutes(label: string): number | null {
+  const match = label.match(/^([1-9]|1[0-2]):([0-5][0-9]) (AM|PM)$/);
+  if (!match) return null;
+
+  const hour12 = Number(match[1]);
+  const minute = Number(match[2]);
+  const period = match[3];
+
+  const hour24 = (hour12 % 12) + (period === "PM" ? 12 : 0);
+  return hour24 * 60 + minute;
+}
+
+function getNowInBookingTimezone() {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: BOOKING_TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(new Date());
+
+  const partValue = (type: string) =>
+    parts.find((part) => part.type === type)?.value ?? "";
+
+  const year = Number(partValue("year"));
+  const month = partValue("month");
+  const day = partValue("day");
+  const hour = Number(partValue("hour"));
+  const minute = Number(partValue("minute"));
+
+  return {
+    date: `${year}-${month}-${day}`,
+    minutes: hour * 60 + minute,
+  };
+}
 
 const EMPTY_FORM = {
   name: "",
@@ -30,8 +86,20 @@ export default function BookingForm({
 }: BookingFormProps) {
   const [step, setStep] = useState<"details" | "confirmed">("details");
   const [form, setForm] = useState(EMPTY_FORM);
+  const [bookingNow, setBookingNow] = useState(getNowInBookingTimezone);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const submitAttemptRef = useRef<{ fingerprint: string; key: string } | null>(null);
+  const minBookingDate = bookingNow.date;
+  const isTodaySelected = form.date === minBookingDate;
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setBookingNow(getNowInBookingTimezone());
+    }, 60_000);
+
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -58,8 +126,42 @@ export default function BookingForm({
     window.sessionStorage.setItem("booking-form-draft-v1", JSON.stringify(form));
   }, [form]);
 
+  useEffect(() => {
+    if (!isTodaySelected || !form.time) return;
+
+    const selectedMinutes = parseTimeLabelToMinutes(form.time);
+    if (selectedMinutes === null) return;
+
+    if (selectedMinutes <= bookingNow.minutes) {
+      setForm((current) =>
+        current.time ? { ...current, time: "" } : current
+      );
+    }
+  }, [bookingNow.minutes, form.time, isTodaySelected]);
+
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const finalTotal = Math.max(0, total - discount);
+
+  const validatePreferredSchedule = (): string | null => {
+    if (!form.date && !form.time) return null;
+
+    if (!form.date && form.time) {
+      return "Please select a preferred date before selecting a time slot.";
+    }
+
+    if (form.date && form.date < minBookingDate) {
+      return "Please choose today or a future date.";
+    }
+
+    if (form.date === minBookingDate && form.time) {
+      const selectedMinutes = parseTimeLabelToMinutes(form.time);
+      if (selectedMinutes !== null && selectedMinutes <= bookingNow.minutes) {
+        return "Selected time has already passed. Please choose a future time slot.";
+      }
+    }
+
+    return null;
+  };
 
   const handleCouponAlreadyUsed = (message: string) => {
     onCouponBlocked?.();
@@ -107,20 +209,37 @@ export default function BookingForm({
     setIsSubmitting(true);
 
     try {
+      const scheduleError = validatePreferredSchedule();
+      if (scheduleError) {
+        throw new Error(scheduleError);
+      }
+
       const isCouponAllowed = await validateCouponForPhone();
       if (!isCouponAllowed) {
         return;
       }
 
+      const payload = JSON.stringify({
+        ...form,
+        cart,
+        appliedCoupon: appliedCoupon ?? "",
+        discount,
+      });
+      const currentAttempt = submitAttemptRef.current;
+      const idempotencyKey =
+        currentAttempt && currentAttempt.fingerprint === payload
+          ? currentAttempt.key
+          : createIdempotencyKey("booking-submit");
+
+      submitAttemptRef.current = { fingerprint: payload, key: idempotencyKey };
+
       const response = await fetch("/api/bookings", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          cart,
-          appliedCoupon,
-          discount,
-        }),
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": idempotencyKey,
+        },
+        body: payload,
       });
 
       const data = (await response.json().catch(() => null)) as
@@ -148,6 +267,7 @@ export default function BookingForm({
         window.sessionStorage.removeItem("booking-form-draft-v1");
         window.sessionStorage.removeItem("booking-cart-draft-v1");
       }
+      submitAttemptRef.current = null;
     } catch (error) {
       setSubmitError(
         error instanceof Error
@@ -299,6 +419,7 @@ export default function BookingForm({
                   type="date"
                   value={form.date}
                   onChange={(e) => setForm({ ...form, date: e.target.value })}
+                  min={minBookingDate}
                   className="w-full bg-white dark:bg-gray-700 border border-border text-gray-900 dark:text-white rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-accent"
                 />
               </div>
@@ -310,19 +431,19 @@ export default function BookingForm({
                   className="w-full bg-white dark:bg-gray-700 border border-border text-gray-900 dark:text-white rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-accent"
                 >
                   <option value="">Select time</option>
-                  <option value="9:00 AM">9:00 AM</option>
-                  <option value="10:00 AM">10:00 AM</option>
-                  <option value="11:00 AM">11:00 AM</option>
-                  <option value="12:00 PM">12:00 PM</option>
-                  <option value="2:00 PM">2:00 PM</option>
-                  <option value="3:00 PM">3:00 PM</option>
-                  <option value="4:00 PM">4:00 PM</option>
-                  <option value="5:00 PM">5:00 PM</option>
-                  <option value="6:00 PM">6:00 PM</option>
-                  <option value="7:00 PM">7:00 PM</option>
-                  <option value="8:00 PM">8:00 PM</option>
-                  <option value="9:00 PM">9:00 PM</option>
-                  <option value="10:00 PM">10:00 PM</option>
+                  {BOOKING_TIME_SLOTS.map((timeSlot) => {
+                    const minutes = parseTimeLabelToMinutes(timeSlot);
+                    const isPastSlotToday =
+                      isTodaySelected &&
+                      minutes !== null &&
+                      minutes <= bookingNow.minutes;
+
+                    return (
+                      <option key={timeSlot} value={timeSlot} disabled={isPastSlotToday}>
+                        {timeSlot}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
             </div>
