@@ -23,8 +23,8 @@ import {
   enforceSameOrigin,
   parseIdempotencyKey,
   sha256Hex,
-} from "@/lib/server/security";
-import { bookingBodySchema } from "@/lib/server/schemas";
+} from "../../../lib/server/security";
+import { bookingBodySchema } from "../../../lib/server/schemas";
 
 const BOOKING_BODY_LIMIT_BYTES = 32 * 1024;
 const MAX_LINE_ITEM_QTY = 10;
