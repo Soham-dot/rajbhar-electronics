@@ -10,6 +10,26 @@ export interface LeadStorageResult {
 
 export type LeadStatus = "in_process" | "closed";
 
+export interface ApiIdempotencyBeginInput {
+  scope: string;
+  idempotencyKey: string;
+  requestHash: string;
+  ttlSeconds: number;
+}
+
+export type ApiIdempotencyBeginResult =
+  | { mode: "skipped" }
+  | { mode: "new" }
+  | { mode: "pending" }
+  | { mode: "conflict" }
+  | { mode: "replay"; statusCode: number; responsePayload: unknown };
+
+export interface DatabaseHealthStatus {
+  configured: boolean;
+  reachable: boolean;
+  error?: string;
+}
+
 interface LeadInsertInput {
   leadType: "contact" | "booking" | "coupon_blocked";
   source: string;
@@ -21,6 +41,7 @@ interface LeadInsertInput {
 }
 
 let tableInitPromise: Promise<void> | null = null;
+let idempotencyTableInitPromise: Promise<void> | null = null;
 
 type SqlClient = ReturnType<typeof neon>;
 
@@ -123,6 +144,179 @@ async function ensureLeadsTable(): Promise<void> {
   }
 
   await tableInitPromise;
+}
+
+async function ensureIdempotencyTable(): Promise<void> {
+  const sql = getSqlClient();
+  if (!sql) {
+    return;
+  }
+
+  if (!idempotencyTableInitPromise) {
+    idempotencyTableInitPromise = (async () => {
+      await sql`
+        CREATE TABLE IF NOT EXISTS api_idempotency (
+          scope TEXT NOT NULL,
+          idempotency_key TEXT NOT NULL,
+          request_hash TEXT NOT NULL,
+          status_code INTEGER,
+          response_payload JSONB,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          expires_at TIMESTAMPTZ NOT NULL,
+          PRIMARY KEY (scope, idempotency_key)
+        );
+      `;
+
+      await sql`
+        CREATE INDEX IF NOT EXISTS api_idempotency_expires_at_idx
+        ON api_idempotency (expires_at);
+      `;
+    })();
+  }
+
+  await idempotencyTableInitPromise;
+}
+
+export async function getDatabaseHealthStatus(): Promise<DatabaseHealthStatus> {
+  const sql = getSqlClient();
+  if (!sql) {
+    return {
+      configured: false,
+      reachable: false,
+      error: "POSTGRES_URL or DATABASE_URL is not configured.",
+    };
+  }
+
+  try {
+    await sql`SELECT 1 AS ok;`;
+    return {
+      configured: true,
+      reachable: true,
+    };
+  } catch (error) {
+    return {
+      configured: true,
+      reachable: false,
+      error:
+        error instanceof Error ? error.message : "Unknown database connectivity error.",
+    };
+  }
+}
+
+export async function beginApiIdempotency(
+  input: ApiIdempotencyBeginInput
+): Promise<ApiIdempotencyBeginResult> {
+  const sql = getSqlClient();
+  if (!sql) {
+    return { mode: "skipped" };
+  }
+
+  const scope = input.scope.trim().toLowerCase();
+  const idempotencyKey = input.idempotencyKey.trim();
+  const requestHash = input.requestHash.trim().toLowerCase();
+  const ttlSeconds = Math.max(60, Math.floor(input.ttlSeconds));
+
+  if (!scope || !idempotencyKey || !requestHash) {
+    return { mode: "skipped" };
+  }
+
+  await ensureIdempotencyTable();
+  await sql`DELETE FROM api_idempotency WHERE expires_at <= NOW();`;
+
+  const insertedRows = await sql`
+    INSERT INTO api_idempotency (
+      scope,
+      idempotency_key,
+      request_hash,
+      expires_at
+    )
+    VALUES (
+      ${scope},
+      ${idempotencyKey},
+      ${requestHash},
+      NOW() + (${ttlSeconds} * INTERVAL '1 second')
+    )
+    ON CONFLICT (scope, idempotency_key) DO NOTHING
+    RETURNING scope;
+  `;
+
+  if (Array.isArray(insertedRows) && insertedRows.length > 0) {
+    return { mode: "new" };
+  }
+
+  const rows = await sql`
+    SELECT
+      request_hash,
+      status_code,
+      response_payload
+    FROM api_idempotency
+    WHERE scope = ${scope}
+      AND idempotency_key = ${idempotencyKey}
+      AND expires_at > NOW()
+    LIMIT 1;
+  `;
+
+  const firstRow = Array.isArray(rows) ? rows[0] : null;
+  if (!firstRow || typeof firstRow !== "object") {
+    return { mode: "pending" };
+  }
+
+  const row = firstRow as {
+    request_hash?: unknown;
+    status_code?: unknown;
+    response_payload?: unknown;
+  };
+
+  const existingHash = String(row.request_hash ?? "").trim().toLowerCase();
+  if (!existingHash || existingHash !== requestHash) {
+    return { mode: "conflict" };
+  }
+
+  const statusCodeRaw = Number(row.status_code);
+  if (
+    Number.isInteger(statusCodeRaw) &&
+    statusCodeRaw >= 100 &&
+    statusCodeRaw <= 599
+  ) {
+    return {
+      mode: "replay",
+      statusCode: statusCodeRaw,
+      responsePayload: row.response_payload ?? null,
+    };
+  }
+
+  return { mode: "pending" };
+}
+
+export async function completeApiIdempotency(input: {
+  scope: string;
+  idempotencyKey: string;
+  statusCode: number;
+  responsePayload: unknown;
+}): Promise<void> {
+  const sql = getSqlClient();
+  if (!sql) {
+    return;
+  }
+
+  const scope = input.scope.trim().toLowerCase();
+  const idempotencyKey = input.idempotencyKey.trim();
+  const statusCode = Math.floor(input.statusCode);
+  if (!scope || !idempotencyKey || !Number.isInteger(statusCode)) {
+    return;
+  }
+
+  await ensureIdempotencyTable();
+  const payloadJson = JSON.stringify(input.responsePayload ?? null);
+
+  await sql`
+    UPDATE api_idempotency
+    SET
+      status_code = ${statusCode},
+      response_payload = ${payloadJson}::jsonb
+    WHERE scope = ${scope}
+      AND idempotency_key = ${idempotencyKey};
+  `;
 }
 
 export async function getLeads(): Promise<AdminLeadRow[]> {
