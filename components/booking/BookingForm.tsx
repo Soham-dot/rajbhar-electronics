@@ -7,6 +7,7 @@ import { BUSINESS } from "@/lib/constants";
 import { createIdempotencyKey } from "@/lib/client/idempotency";
 
 const BOOKING_TIMEZONE = "Asia/Kolkata";
+const INVALID_SCHEDULE_MESSAGE = "Please enter valid time or date.";
 const BOOKING_TIME_SLOTS = [
   "9:00 AM",
   "10:00 AM",
@@ -33,6 +34,24 @@ function parseTimeLabelToMinutes(label: string): number | null {
 
   const hour24 = (hour12 % 12) + (period === "PM" ? 12 : 0);
   return hour24 * 60 + minute;
+}
+
+function isValidIsoDate(value: string): boolean {
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return false;
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+
+  if (month < 1 || month > 12 || day < 1 || day > 31) return false;
+
+  const parsed = new Date(Date.UTC(year, month - 1, day));
+  return (
+    parsed.getUTCFullYear() === year &&
+    parsed.getUTCMonth() === month - 1 &&
+    parsed.getUTCDate() === day
+  );
 }
 
 function getNowInBookingTimezone() {
@@ -143,24 +162,33 @@ export default function BookingForm({
   const finalTotal = Math.max(0, total - discount);
 
   const validatePreferredSchedule = (): string | null => {
-    if (!form.date && !form.time) return null;
+    if (!form.date || !form.time) return INVALID_SCHEDULE_MESSAGE;
+    if (!isValidIsoDate(form.date)) return INVALID_SCHEDULE_MESSAGE;
 
-    if (!form.date && form.time) {
-      return "Please select a preferred date before selecting a time slot.";
+    const selectedMinutes = parseTimeLabelToMinutes(form.time);
+    if (selectedMinutes === null) return INVALID_SCHEDULE_MESSAGE;
+
+    if (form.date < minBookingDate) return INVALID_SCHEDULE_MESSAGE;
+    if (form.date === minBookingDate && selectedMinutes <= bookingNow.minutes) {
+      return INVALID_SCHEDULE_MESSAGE;
     }
 
-    if (form.date && form.date < minBookingDate) {
-      return "Please choose today or a future date.";
-    }
-
-    if (form.date === minBookingDate && form.time) {
-      const selectedMinutes = parseTimeLabelToMinutes(form.time);
-      if (selectedMinutes !== null && selectedMinutes <= bookingNow.minutes) {
-        return "Selected time has already passed. Please choose a future time slot.";
-      }
+    if (!BOOKING_TIME_SLOTS.some((slot) => slot === form.time)) {
+      return INVALID_SCHEDULE_MESSAGE;
     }
 
     return null;
+  };
+
+  const normalizeDateInput = (value: string): string => {
+    if (!value) return "";
+    if (isValidIsoDate(value)) return value;
+
+    const match = value.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+    if (!match) return "";
+
+    const normalized = `${match[3]}-${match[2]}-${match[1]}`;
+    return isValidIsoDate(normalized) ? normalized : "";
   };
 
   const handleCouponAlreadyUsed = (message: string) => {
@@ -417,8 +445,16 @@ export default function BookingForm({
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Preferred Date</label>
                 <input
                   type="date"
+                  required
                   value={form.date}
-                  onChange={(e) => setForm({ ...form, date: e.target.value })}
+                  onChange={(e) => {
+                    const nextDate = normalizeDateInput(e.target.value);
+                    setForm((current) => ({
+                      ...current,
+                      date: nextDate,
+                      time: current.date === nextDate ? current.time : "",
+                    }));
+                  }}
                   min={minBookingDate}
                   className="w-full bg-white dark:bg-gray-700 border border-border text-gray-900 dark:text-white rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-accent"
                 />
@@ -426,6 +462,7 @@ export default function BookingForm({
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Preferred Time</label>
                 <select
+                  required
                   value={form.time}
                   onChange={(e) => setForm({ ...form, time: e.target.value })}
                   className="w-full bg-white dark:bg-gray-700 border border-border text-gray-900 dark:text-white rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-accent"

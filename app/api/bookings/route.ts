@@ -31,6 +31,7 @@ const MAX_LINE_ITEM_QTY = 10;
 const MAX_LINE_ITEMS = 25;
 const IDEMPOTENCY_TTL_SECONDS = 24 * 60 * 60;
 const BOOKING_TIMEZONE = "Asia/Kolkata";
+const INVALID_SCHEDULE_MESSAGE = "Please enter valid time or date.";
 const BOOKING_TIME_SLOT_SET = new Set([
   "9:00 AM",
   "10:00 AM",
@@ -106,32 +107,20 @@ function isValidIsoDate(value: string): boolean {
 }
 
 function validatePreferredSchedule(date: string, time: string): string | null {
-  if (!date && !time) return null;
-
-  if (!date && time) {
-    return "Please select a preferred date when choosing a time slot.";
-  }
-
-  if (date && !isValidIsoDate(date)) {
-    return "Please enter a valid preferred date.";
-  }
-
-  if (time && !BOOKING_TIME_SLOT_SET.has(time)) {
-    return "Please select a valid preferred time slot.";
-  }
-
-  if (!date) return null;
+  if (!date || !time) return INVALID_SCHEDULE_MESSAGE;
+  if (!isValidIsoDate(date)) return INVALID_SCHEDULE_MESSAGE;
+  if (!BOOKING_TIME_SLOT_SET.has(time)) return INVALID_SCHEDULE_MESSAGE;
 
   const now = getNowInBookingTimezone();
   if (date < now.date) {
-    return "Please choose today or a future preferred date.";
+    return INVALID_SCHEDULE_MESSAGE;
   }
 
-  if (date === now.date && time) {
-    const selectedMinutes = parseTimeLabelToMinutes(time);
-    if (selectedMinutes !== null && selectedMinutes <= now.minutes) {
-      return "Selected time has already passed. Please choose a future time slot.";
-    }
+  const selectedMinutes = parseTimeLabelToMinutes(time);
+  if (selectedMinutes === null) return INVALID_SCHEDULE_MESSAGE;
+
+  if (date === now.date && selectedMinutes <= now.minutes) {
+    return INVALID_SCHEDULE_MESSAGE;
   }
 
   return null;
