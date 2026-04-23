@@ -44,6 +44,11 @@ Lead notification variables (optional):
 For complete hosting setup, see:
 - [VERCEL_SETUP.md](./VERCEL_SETUP.md)
 
+## Operations Reporting Templates
+
+- CloudWatch report playbook: [docs/cloudwatch-reporting-playbook.md](./docs/cloudwatch-reporting-playbook.md)
+- CloudWatch metrics input CSV: [docs/cloudwatch-metrics-input-template.csv](./docs/cloudwatch-metrics-input-template.csv)
+
 ## Build
 
 ```bash

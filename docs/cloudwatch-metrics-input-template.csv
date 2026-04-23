@@ -1,0 +1,7 @@
+report_period_start,report_period_end,timezone,environment,server_name,instance_id,hostname,role,region,cpu_avg,cpu_max,cpu_p95,memory_avg,memory_max,memory_p95,disk_used_avg,disk_used_max,disk_used_p95,network_in_total_mb,network_out_total_mb,disk_read_ops_total,disk_write_ops_total,status_check_failed_count,uptime_percent,downtime_minutes,incident_count,alarm_breach_count,app_latency_p95_ms,app_error_rate_percent,utilization_class,growth_trend,scaling_risk,estimated_monthly_cost_usd,recommendation,owner,priority,due_date,status
+2026-04-01,2026-04-07,Asia/Kolkata,production,Server-01,i-xxxxxxxxxxxxxxx,host-01,web,ap-south-1,,,,,,,,,,,,,,,,,,,,,,,,,,,
+2026-04-01,2026-04-07,Asia/Kolkata,production,Server-02,i-xxxxxxxxxxxxxxx,host-02,web,ap-south-1,,,,,,,,,,,,,,,,,,,,,,,,,,,
+2026-04-01,2026-04-07,Asia/Kolkata,production,Server-03,i-xxxxxxxxxxxxxxx,host-03,api,ap-south-1,,,,,,,,,,,,,,,,,,,,,,,,,,,
+2026-04-01,2026-04-07,Asia/Kolkata,production,Server-04,i-xxxxxxxxxxxxxxx,host-04,api,ap-south-1,,,,,,,,,,,,,,,,,,,,,,,,,,,
+2026-04-01,2026-04-07,Asia/Kolkata,production,Server-05,i-xxxxxxxxxxxxxxx,host-05,db,ap-south-1,,,,,,,,,,,,,,,,,,,,,,,,,,,
+2026-04-01,2026-04-07,Asia/Kolkata,production,Server-06,i-xxxxxxxxxxxxxxx,host-06,db,ap-south-1,,,,,,,,,,,,,,,,,,,,,,,,,,,
